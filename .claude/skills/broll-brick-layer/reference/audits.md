@@ -8,7 +8,7 @@ command lines are a contract, keep them stable.
 
 ```
 python3 S/flicker_audit.py --project P --timeline T [--min-run-s 0.6] [--aroll-tracks auto|1,2]
-        [--track-name "B-roll bricks"] [--render WORK/audit.mp4] [-o WORK/flicker.json]
+        [--track-name "B-roll bricks"] [--render WORK/audit.mp4 --upload-box-off] [-o WORK/flicker.json]
 ```
 
 Rebuilds, frame by frame, the top-most enabled clip across every video
@@ -27,7 +27,13 @@ seam is not a cut). Finding kinds:
 a-roll tracks are found automatically (tracks covering 80 % of the
 timeline); with text or graphics on an extra full-length track, pass
 `--aroll-tracks` explicitly. `--render` uses the Deliver page's current
-format and adds only its own render job.
+format, adds only its own render job and removes it afterwards, and puts the
+Deliver page's settings back. Before the first `--render` in a Resolve
+session, ask the user to open the Deliver page (Shift+8) and untick "Upload
+directly to YouTube" (it can stay on for the whole session after any YouTube
+preset, and the API can neither see nor clear it); only then pass
+`--upload-box-off`, which `--render` requires. Exit 5 means Resolve's log
+shows the audit render being uploaded: tell the user straight away.
 
 Gate: 0 findings, counted fresh after every change. Comparing against an
 earlier audit ("no new findings") lets old flashes live forever.

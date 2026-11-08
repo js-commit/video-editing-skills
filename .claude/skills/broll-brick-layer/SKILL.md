@@ -17,15 +17,16 @@ lays the bricks on a "B-roll bricks" track in your Resolve timeline. The
 rationale for every brick stays in `plan.json`, and only the gaps it could
 not fill get a red NEED BROLL marker.
 
-Scripts live in `${CLAUDE_SKILL_DIR}/scripts/` (call that `S`). Each one has
-`--help`; its docstring carries its own gotchas. Read it before first use.
+Scripts live in `${CLAUDE_SKILL_DIR}/scripts/` (call that `S`; `REPO` is
+`${CLAUDE_SKILL_DIR}/../../..`). Each one has `--help`; its docstring carries
+its own gotchas. Read it before first use.
 
 ## Before you start
 
-1. Read `user/preferences.md`: `## general` and `## broll-brick-layer`
+1. Read `REPO/user/preferences.md`: `## general` and `## broll-brick-layer`
    override everything below (brick length, how much to cover, shots to
    avoid, track name...).
-2. `python3 tools/vidkit/settings.py get editor.nle`:
+2. `python3 REPO/tools/vidkit/settings.py get editor.nle`:
    - `resolve-studio`: the steps below. DaVinci Resolve must be running
      with the project open. Never launch, quit or switch projects on the
      user while they might be editing: ask them to open it.
@@ -35,7 +36,7 @@ Scripts live in `${CLAUDE_SKILL_DIR}/scripts/` (call that `S`). Each one has
      (3-7) still work on files if the user wants a shot list to place by hand.
    - unset: ask which they use (exit code 4 means the same for any script).
 3. Work folder: `<project>/<project_layout.work>/broll-brick-layer/` (the
-   scripts default to it; `python3 tools/vidkit/settings.py project-dir
+   scripts default to it; `python3 REPO/tools/vidkit/settings.py project-dir
    "<Resolve project name>"`). Call it WORK. Put `plan.json`, `needs.json`,
    the brief and verdicts there.
 4. Teach as you go if the user is new: what a brick is, why the scripts
@@ -70,9 +71,13 @@ and its review notes. Pass `--track audio:N` if the voice is not on A1.
 ### 3. Find and profile the b-roll
 
 The project's footage folder (`project_layout.footage`) and any supply
-timelines in the inventory. Ask if unclear. A "b-roll" clip whose transcript
-is full of speech is probably a misfiled a-roll take: ask before treating it
-as b-roll. Then, for each clip:
+timelines in the inventory. Ask if unclear. Bricks are CUT out of a supply
+timeline, so only a timeline named as b-roll (`"dedicated_supply": true`)
+is supply by default; to use any other one (an earlier cut, a client
+version), ask the user and list it in the plan's `supply_timelines`:
+check_plan.py and apply_plan.py refuse it otherwise. A "b-roll" clip whose
+transcript is full of speech is probably a misfiled a-roll take: ask before
+treating it as b-roll. Then, for each clip:
 
 ```
 python3 S/annotations.py status <clips...>           # content-hash store: renamed or moved clips keep their notes
@@ -192,7 +197,7 @@ script did: restore with `backup.py restore`.
 Spawn one `broll-hunt` agent per slot. Its brief: the spoken words and
 times, slot length, timeline resolution and fps, the sources in scope (the
 project's footage, the b-roll library via
-`python3 .claude/skills/broll-library/scripts/search.py "<query>" --json`,
+`python3 ${CLAUDE_SKILL_DIR}/../broll-library/scripts/search.py "<query>" --json`,
 other projects under `paths.projects_dir`, and free stock or press images
 online only if the user agrees: `reference/stock-sources.md`), and the
 output path. It writes a pick JSON; you read its frames, merge the pick into
@@ -220,8 +225,10 @@ credit line in the report.
 
 Users change: the brick track name (`--track-name`, the plan's
 `track_name`), brick length range, how much to cover, annotation fields
-(add your own to the annotation format), agent models (in
-`.claude/agents/broll-*.md`), the flash threshold (`--min-run-s`). Record
-lasting choices in `user/preferences.md` under `## broll-brick-layer`; use
-the `customize` skill to change how the skill itself works. Tests:
-`python3 -B S/tests/run_all.py` (no Resolve needed).
+(add your own to the annotation format), agent models (`python3
+REPO/tools/agent_models.py apply pro|max` matches them to the Claude plan;
+hand edits to `.claude/agents/broll-*.md` stick except on broll-annotator
+and broll-hunt, which that command rewrites), the flash threshold
+(`--min-run-s`). Record lasting choices in `REPO/user/preferences.md` under
+`## broll-brick-layer`; use the `customize` skill to change how the skill
+itself works. Tests: `python3 -B S/tests/run_all.py` (no Resolve needed).

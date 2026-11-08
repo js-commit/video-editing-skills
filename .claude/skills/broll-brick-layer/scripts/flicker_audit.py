@@ -22,12 +22,19 @@ close_gaps.py, slivers with seam_audit.py --plan + ripple_extend.py --plan.
 Usage:
   flicker_audit.py --project P --timeline T [--min-run-s 0.6]
                    [--aroll-tracks auto|1|1,2] [--track-name "B-roll bricks"]
-                   [--render OUT.mp4] [-o report.json]
+                   [--render OUT.mp4 --upload-box-off] [-o report.json]
 
 --aroll-tracks auto = every video track (except the brick track) that covers
 at least 80 % of the timeline: camera tracks run end to end, overlays do not.
---render uses the Deliver page's current format (job-scoped: only its own
-render job is added and started; nothing else in the queue is touched).
+--render uses the Deliver page's current format at 540p. Resolve's "Upload
+directly to YouTube" box can stay ticked for a whole session after any
+YouTube preset and the API can neither see nor clear it, so --render refuses
+unless --upload-box-off says the user has checked that it is unticked. The
+Deliver page's settings are saved as a temporary render preset and loaded back
+afterwards; only its own render job is added, started and then removed.
+
+Exit codes: 0 audited (the findings count is the gate), 5 Resolve's log shows
+the audit render being uploaded (tell the user at once).
 """
 from __future__ import annotations
 
@@ -178,27 +185,52 @@ def dump_tracks(tl):
 
 
 def render_and_detect(proj, tl, path, thresh):
+    """Render a 540p copy with ONE job of our own and scene-detect it. The
+    Deliver page's settings (and the current timeline) are put back afterwards,
+    and our job is removed from the queue, whether or not the render worked.
+    Returns (file, scene cut times, uploaded per Resolve's log)."""
     out_dir = os.path.dirname(os.path.abspath(path))
     stem = os.path.splitext(os.path.basename(path))[0]
     os.makedirs(out_dir, exist_ok=True)
-    proj.SetCurrentTimeline(tl)
-    proj.SetRenderSettings({"SelectAllFrames": True, "TargetDir": out_dir, "CustomName": stem,
-                            "FormatWidth": 960, "FormatHeight": 540, "ExportVideo": True, "ExportAudio": False})
-    job = proj.AddRenderJob()
-    if not job:
-        sys.exit("AddRenderJob failed (is the Deliver page set to a video format?)")
-    proj.StartRendering([job], isInteractiveMode=False)
-    while proj.IsRenderingInProgress():
-        time.sleep(3)
-    B.log("render:", proj.GetRenderJobStatus(job))
+    preset = f"flicker-audit restore {time.strftime('%Y%m%d-%H%M%S')}"
+    if not proj.SaveAsNewRenderPreset(preset):
+        sys.exit("could not save the Deliver page's settings as a temporary render preset, so they could not be "
+                 "put back after the audit render: not rendering. Run the audit without --render.")
+    prev_tl = proj.GetCurrentTimeline()
+    job = None
+    try:
+        proj.SetCurrentTimeline(tl)
+        if not proj.SetRenderSettings({"SelectAllFrames": True, "TargetDir": out_dir, "CustomName": stem,
+                                       "FormatWidth": 960, "FormatHeight": 540,
+                                       "ExportVideo": True, "ExportAudio": False}):
+            sys.exit("SetRenderSettings was refused (is the output folder writable?)")
+        job = proj.AddRenderJob()
+        if not job:
+            sys.exit("AddRenderJob failed (is the Deliver page set to a video format?)")
+        proj.StartRendering([job], isInteractiveMode=False)
+        while proj.IsRenderingInProgress():
+            time.sleep(3)
+        B.log("render:", proj.GetRenderJobStatus(job))
+    finally:
+        if job and not proj.DeleteRenderJob(job):
+            B.log(f"WARN: could not remove the audit render job {job} from the render queue")
+        if proj.LoadRenderPreset(preset):
+            proj.DeleteRenderPreset(preset)
+        else:
+            B.log(f"WARN: could not load the Deliver page's settings back; they are saved as render preset "
+                  f"{preset!r}: load it on the Deliver page, then delete it")
+        if prev_tl:
+            proj.SetCurrentTimeline(prev_tl)
     cands = [os.path.join(out_dir, f) for f in os.listdir(out_dir) if f.startswith(stem)]
     if not cands:
         sys.exit(f"render produced nothing in {out_dir}")
     vid = max(cands, key=os.path.getmtime)
+    time.sleep(2)  # give Resolve's log a moment to record an upload
+    uploaded = B.vr().youtube_upload_logged(vid)
     r = B.media.run([B.media.ffmpeg(), "-nostdin", "-i", vid, "-vf", f"select='gt(scene,{thresh})',showinfo",
                      "-f", "null", "-"], capture_output=True, text=True)
     cuts = [float(ln.split("pts_time:")[1].split()[0]) for ln in r.stderr.splitlines() if "pts_time:" in ln]
-    return vid, cuts
+    return vid, cuts, uploaded
 
 
 def main():
@@ -210,9 +242,17 @@ def main():
     ap.add_argument("--aroll-tracks", default="auto", help="'auto' or comma list of a-roll video tracks")
     ap.add_argument("--track-name", default=B.BRICK_TRACK, help="the brick track's name ('' = none)")
     ap.add_argument("--render", default=None, help="also render a 540p copy here and scene-detect it")
+    ap.add_argument("--upload-box-off", action="store_true",
+                    help="with --render: the user has checked that the Deliver page's 'Upload directly to YouTube' "
+                         "box is unticked (the API cannot see it)")
     ap.add_argument("--scene-thresh", type=float, default=0.3)
     ap.add_argument("-o", "--out", default=None)
     a = ap.parse_args()
+    if a.render and not a.upload_box_off:
+        sys.exit("refusing --render: it goes through the Deliver page, whose 'Upload directly to YouTube' box can "
+                 "stay ticked for the whole Resolve session and is invisible to the scripting API, so the audit "
+                 "render could be published. Ask the user to open the Deliver page (Shift+8) and untick it, then "
+                 "re-run with --render ... --upload-box-off.")
     _, proj = B.open_project(a.project)
     tl = B.timeline_by_name(proj, a.timeline)
     fps = B.fps_of(tl)
@@ -227,9 +267,10 @@ def main():
     found = find_flicker(tracks, end_frame, fps, min_f, aroll, brick_idx, names)
     rep = {"timeline": a.timeline, "fps": fps, "min_run_s": a.min_run_s, "aroll_tracks": aroll,
            "brick_track": brick_idx}
+    uploaded = False
     if a.render:
-        vid, cuts = render_and_detect(proj, tl, a.render, a.scene_thresh)
-        rep["render"] = {"file": vid, "scene_cuts": cuts}
+        vid, cuts, uploaded = render_and_detect(proj, tl, a.render, a.scene_thresh)
+        rep["render"] = {"file": vid, "scene_cuts": cuts, "youtube_upload_logged": uploaded}
         found = sorted(found + pixel_findings(cuts, fps, a.min_run_s), key=lambda x: x["start_f"])
     rep["findings"] = found
     for f in found:
@@ -238,7 +279,13 @@ def main():
     if a.out:
         with open(a.out, "w") as fh:
             json.dump(rep, fh, indent=1)
-    print(json.dumps({"findings": len(found), "kinds": sorted({f["kind"] for f in found})}))
+    print(json.dumps({"findings": len(found), "kinds": sorted({f["kind"] for f in found}),
+                      "youtube_upload_logged": uploaded}))
+    if uploaded:
+        B.log("WARNING: Resolve's log shows the audit render being UPLOADED to YouTube: the Deliver page's "
+              "'Upload directly to YouTube' box was ticked. Tell the user now; they delete it in YouTube Studio "
+              "and untick the box.")
+        sys.exit(5)
 
 
 if __name__ == "__main__":

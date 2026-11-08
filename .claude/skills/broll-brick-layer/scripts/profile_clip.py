@@ -99,6 +99,7 @@ def main():
         p90 = vals[int(len(vals) * 0.9)] if vals else 0
         limit = max(2 * p50, p90)
         doc.update(bucket_s=a.bucket, p50=p50, p90=p90, motion=rows, calm=calm_spans(rows, a.bucket, limit))
+    os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
     with open(a.out, "w") as f:
         json.dump(doc, f, indent=1)
     B.log(f"{len(doc['scenes'])} scenes"

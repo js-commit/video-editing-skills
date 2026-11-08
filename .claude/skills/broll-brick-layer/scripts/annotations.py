@@ -10,7 +10,7 @@ renames, moves and copies of the clip. One JSON per clip, stored:
 
 Document shape: reference/formats.md ("Annotation"). `put` validates it and
 protects human work: when the stored document says "annotator": "human", an
-agent's document may only fill EMPTY descriptions; boundaries, product,
+agent's document may only fill EMPTY descriptions; boundaries, subject,
 device, quality and director notes stay as the human left them.
 
 Usage:

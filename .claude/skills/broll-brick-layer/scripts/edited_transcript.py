@@ -16,6 +16,10 @@ stored elsewhere (a read-only source folder).
 Usage:
   edited_transcript.py --inventory inventory.json [--track audio:1]
         [--transcribe] [--map SUBSTRING=TRANSCRIPT.json ...] [-o edited_transcript.json]
+
+Exit codes with --transcribe are tools/transcribe.py's: 4 no transcription
+engine set (ask the user, `settings.py set transcription.engine <name>`,
+re-run), 5 the engine cannot run here, 1 it failed.
 """
 from __future__ import annotations
 
@@ -55,17 +59,17 @@ def sidecar_for(media_path, transcribe=False):
         pass
     if not transcribe:
         return None
-    try:
-        from vidkit.transcript import ensure_transcript
-        return str(ensure_transcript(media_path))
-    except ImportError:
-        r = subprocess.run([sys.executable, str(TRANSCRIBE), media_path], capture_output=True, text=True)
-        if r.returncode == 4:
-            sys.stderr.write(r.stderr)
-            sys.exit(4)
-        if r.returncode:
-            sys.exit(f"transcription failed for {media_path}: {r.stderr.strip()[-400:]}")
-        return r.stdout.strip().splitlines()[-1]
+    # tools/transcribe.py explains its own failures on stderr (passed through);
+    # its exit code is ours: 4 = no engine set (ask the user), 5 = the engine
+    # cannot run here, 1 = it failed. 6 = no speech: nothing to place.
+    r = subprocess.run([sys.executable, str(TRANSCRIBE), media_path], stdout=subprocess.PIPE, text=True)
+    if r.returncode == 6:
+        B.log(f"no speech found in {media_path}: no words from it")
+        return None
+    if r.returncode:
+        B.log(f"transcription failed for {media_path} (tools/transcribe.py exit {r.returncode})")
+        sys.exit(r.returncode)
+    return r.stdout.strip().splitlines()[-1]
 
 
 def project_words(items, words_for):
@@ -144,7 +148,7 @@ def main():
     out = {"timeline": aroll["name"], "fps": aroll["fps"], "clock": "seconds from the timeline start",
            "word_count": len(placed), "segments": segment(placed)}
     for p in sorted(missing):
-        B.log(f"no transcript for {p} (re-run with --transcribe, or --map it)")
+        B.log(f"no transcript for {p}" + ("" if a.transcribe else " (re-run with --transcribe, or --map it)"))
     blob = json.dumps(out, indent=1)
     if a.output:
         with open(a.output, "w") as f:

@@ -19,10 +19,13 @@ Optional per placement: "rotation" (degrees), "zoom" (1.0 = none), "props"
 ({"Pan": 0, "Tilt": -200, ...} any TimelineItem property).
 
 Safety: refuses backup / never-touch timelines (settings
-editor.never_touch_timelines and the plan's "never_touch" list); only fills
-EMPTY space on the brick track; exports a .drp backup first (backup.py) and
-stops if that fails; after saving, re-reads the track and reports any brick
-the save dropped. Run check_plan.py first; run flicker_audit.py after.
+editor.never_touch_timelines and the plan's "never_touch" list); only cuts
+from a supply timeline whose name says b-roll ("B-roll", "broll supply") or
+that the plan lists in "supply_timelines" (the user's yes for any other
+timeline), and never from the a-roll itself; only fills EMPTY space on the
+brick track; exports a .drp backup first (backup.py) and stops if that fails;
+after saving, re-reads the track and reports any brick the save dropped. Run
+check_plan.py first; run flicker_audit.py after.
 
 Usage:
   apply_plan.py plan.json [--dry-run] [--no-backup] [-o report.json]
@@ -121,6 +124,9 @@ def main():
     for p in plan["placements"]:
         if p.get("broll_timeline"):
             B.refuse_protected(p["broll_timeline"], extra)
+    refusals = B.supply_refusals(plan)
+    if refusals:
+        sys.exit("refusing, nothing was changed:\n  " + "\n  ".join(refusals))
 
     pm, proj = B.open_project(plan["project"])
     aroll = B.timeline_by_name(proj, plan["aroll_timeline"])

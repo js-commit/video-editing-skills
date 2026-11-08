@@ -181,6 +181,19 @@ def test_check_plan_snaps_and_errors():
     assert any("look at this" in w for w in rep5["warnings"]), rep5
 
 
+def test_supply_opt_in():
+    def plan(src, **kw):
+        return dict({"project": "p", "aroll_timeline": "cut", "placements": [
+            {"id": 1, "broll_timeline": src, "file_hint": "clip", "use_src_start_s": 0, "use_src_end_s": 4,
+             "record_s": 30.0}]}, **kw)
+    assert B.supply_refusals(plan("broll supply")) == [] and B.supply_refusals(plan("B-Roll day 2")) == []
+    assert "supply_timelines" in B.supply_refusals(plan("rough cut v1"))[0]
+    assert B.supply_refusals(plan("rough cut v1", supply_timelines=["rough cut v1"])) == []
+    assert "a-roll timeline itself" in B.supply_refusals(plan("cut", supply_timelines=["cut"]))[0]
+    _, rep = CP.check(plan("rough cut v1"), inventory(), probe=False)
+    assert any("not named as a b-roll supply" in e for e in rep["errors"]), rep
+
+
 def ripple_timeline():
     t0 = 86400
     face, brick = MPI("face", frames=5000), MPI("b1", frames=1000)

@@ -8,6 +8,8 @@ Errors (exit 3, fix the plan and re-run):
     timeline (the user's or an earlier pass's): bricks only fill EMPTY space
   * the same source range is used twice
   * the a-roll or supply timeline is a backup / on the never-touch list
+  * a supply timeline is neither named as b-roll nor listed in the plan's
+    "supply_timelines" (apply_plan.py cuts used ranges out of it)
   * a placement runs past the end of the timeline
   * after snapping, the viewer would still see a flash: an a-roll shot, gap
     or brick shorter than --min-run-s next to a planned brick
@@ -102,6 +104,7 @@ def check(plan, inv, words=None, min_run_s=0.6, snap_s=1.0, snap=True, probe=Tru
     for name in {plan.get("aroll_timeline")} | {p.get("broll_timeline") for p in pl}:
         if name and B.is_protected(name, extra):
             errors.append(f"timeline {name!r} is a backup / never-touch timeline")
+    errors += B.supply_refusals(plan)
     tracks, overlays, existing, brick_idx, end_f = aroll_tracks_from_inventory(inv)
     min_f, snap_f = int(round(min_run_s * fps)), int(round(snap_s * fps))
     bricks = []

@@ -4,8 +4,11 @@
 Classifies timelines:
   aroll    the edited talking-head timeline to lay b-roll on (--aroll NAME;
            default: the project's current timeline)
-  broll    b-roll "supply" timelines: clips laid end to end that bricks are
-           CUT from (with --supply-prefix, only names starting with it)
+  broll    the other timelines, as possible b-roll "supply" (clips laid end to
+           end that bricks are CUT from; with --supply-prefix, only names
+           starting with it). "dedicated_supply" is true when the name says
+           b-roll; apply_plan.py cuts from any other one only when the plan
+           lists it in "supply_timelines" (ask the user first)
   skipped  backups and never-touch timelines (never read or written)
 
 Every item records its timeline position and source range in frames AND
@@ -134,9 +137,15 @@ def main():
         elif a.supply_prefix is not None and not name.lower().startswith(a.supply_prefix.lower()):
             out["skipped"].append({"name": name, "reason": "not a supply timeline (--supply-prefix)"})
         else:
-            out["broll"].append(entry_for(tl))
+            e = entry_for(tl)
+            e["dedicated_supply"] = B.is_dedicated_supply(name)
+            out["broll"].append(e)
     if out["aroll"] is None:
         sys.exit(f"a-roll timeline {aroll_name!r} not found (or it is a backup / never-touch timeline)")
+    others = [e["name"] for e in out["broll"] if not e["dedicated_supply"]]
+    if others:
+        B.log(f"not named as b-roll supply: {others}. Bricks are CUT out of a supply timeline: plan from one of "
+              f"these only after the user says yes, and list it in the plan's \"supply_timelines\".")
     if a.compare:
         with open(a.compare) as f:
             out["brick_changes_since_compare"] = brick_changes(json.load(f), out, a.track_name)

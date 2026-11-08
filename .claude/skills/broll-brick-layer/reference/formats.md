@@ -73,6 +73,10 @@ for a clip slowed down (conformed) in Resolve.
 - `media`: a file (imported into a "B-roll (brick layer)" bin when needed).
 - `broll_timeline` + `file_hint` (a substring of the clip's path or name):
   cut the range out of a supply timeline, so what is used shows as a gap.
+  A timeline whose name says b-roll ("broll supply", "B-roll") is supply;
+  any other one only when the user agreed and the plan lists it in
+  `"supply_timelines": ["old cut"]` (check_plan.py and apply_plan.py refuse
+  it otherwise, and always refuse the a-roll timeline itself).
 - Optional: `rotation` (degrees, for an upside-down camera mount), `zoom`,
   `props` (any Resolve TimelineItem property), `clip_duration_s`.
 

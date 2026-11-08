@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import functools
 import glob
+import json
 import os
 import re
 import sys
@@ -64,6 +65,36 @@ def refuse_protected(name, extra=()):
     if is_protected(name, extra):
         sys.exit(f"refusing: timeline {name!r} is a backup or on the never-touch list "
                  f"(settings editor.never_touch_timelines). Work on another timeline.")
+
+
+# A b-roll SUPPLY timeline is one whose name says so ("B-roll", "broll supply").
+# apply_plan.py CUTS each used range out of its supply timeline, so any other
+# timeline (an earlier cut, a client version) is only cut from when the plan
+# lists it in "supply_timelines", after the user has said yes.
+SUPPLY_NAME = re.compile(r"b[\s_-]?roll", re.I)
+
+
+def is_dedicated_supply(name):
+    return bool(SUPPLY_NAME.search(name or ""))
+
+
+def supply_refusals(plan):
+    """Pure: one message per placement that would cut footage out of a timeline
+    that is the a-roll itself, or neither named as b-roll supply nor listed in
+    the plan's "supply_timelines"."""
+    allowed = set(plan.get("supply_timelines") or [])
+    out = []
+    for n, p in enumerate(plan.get("placements", []), start=1):
+        name = p.get("broll_timeline")
+        if not name:
+            continue
+        if name == plan.get("aroll_timeline"):
+            out.append(f"placement {p.get('id', n)}: its broll_timeline is the a-roll timeline itself")
+        elif not is_dedicated_supply(name) and name not in allowed:
+            out.append(f"placement {p.get('id', n)}: timeline {name!r} is not named as a b-roll supply, and "
+                       f"apply_plan.py CUTS the used range out of it. Ask the user; if they agree, add "
+                       f"\"supply_timelines\": [{json.dumps(name)}] to the plan")
+    return out
 
 
 def work_dir(project_name, sub=""):

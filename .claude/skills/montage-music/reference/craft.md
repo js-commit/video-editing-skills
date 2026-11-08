@@ -52,7 +52,7 @@ unlink the clip's audio (Ctrl/Cmd+Shift+L toggles linked selection) and drag its
 
 - The music should carry the montage without burying the clips: cues ~-20 LUFS over the clips'
   own sound at ~-21 dB RMS, the whole mix normalised to -16 LUFS (a comfortable level for phones,
-  laptops and TVs; YouTube plays louder videos at -14).
+  laptops and TVs; YouTube turns louder uploads down to about -14 LUFS and leaves quieter ones alone).
 - Wind, chatter, traffic: lower (`bed_db` -6), not muted. Silence under music sounds fake.
 - A spoken line worth hearing: a featured `moment` with `duck: true, speech: true`; the music dips
   ~6 dB under it.

@@ -13,8 +13,8 @@ simpler and the file is better.
 --rights is required: one honest line ("my own song", "CC BY 4.0, credit: Name",
 "YouTube Audio Library, no attribution needed"). It is written to SOURCES.tsv beside the
 track with the URL and date, so a later release can check what it may use.
---out defaults to settings paths.music_dir. The track is saved as <name>.mp3; an existing file
-is never overwritten.
+--out defaults to settings paths.music_dir. The track is saved as <name>.mp3 (characters a file
+name cannot hold, and %, become spaces); an existing file is never overwritten.
 
 yt-dlp is not installed by this repo. If it is missing this prints how to install it; ask the
 user first.
@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as _dt
+import re
 import shutil
 import subprocess
 import sys
@@ -61,13 +62,17 @@ def main() -> int:
                                                                        hint="the folder with music you have the rights to use")
     except settings.SettingMissing as e:
         settings.exit_missing(e)
+    # a file name, not a path: no folder separators, and no % (yt-dlp reads it as a template field)
+    fname = re.sub(r"\s+", " ", re.sub(r'[\\/:*?"<>|%\x00-\x1f]', " ", a.name)).strip(" .-")
+    if not fname:
+        sys.exit("--name is empty once the characters a file name cannot hold are removed")
     out.mkdir(parents=True, exist_ok=True)
-    dest = out / f"{a.name}.mp3"
+    dest = out / f"{fname}.mp3"
     if dest.exists():
         sys.exit(f"{dest} exists: pick another --name")
     ff = Path(media.ffmpeg()).parent
     r = subprocess.run([*y, a.url, "--no-playlist", "-f", "bestaudio/best", "-x", "--audio-format", "mp3", "--audio-quality", "0",
-                        "--ffmpeg-location", str(ff), "-o", str(out / f"{a.name}.%(ext)s")], capture_output=True, text=True)
+                        "--ffmpeg-location", str(ff), "-o", str(out / f"{fname}.%(ext)s")], capture_output=True, text=True)
     if r.returncode or not dest.exists():
         sys.exit(f"download failed:\n{r.stderr[-800:]}")
     secs = media.duration(dest)

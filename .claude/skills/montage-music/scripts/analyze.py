@@ -5,7 +5,7 @@
   analyze.py TRACK --profile [START END STEP]     print a loudness profile (find entries by eye)
 
 Writes a JSON (default: <cache>/music/<track stem>.beats.json, or --out) and prints one
-JSON line on stdout: {"out", "tempo", "beats", "interval_cv", "lufs", "duration", "engine"}.
+JSON line on stdout: {"out", "tempo", "interval_cv", "lufs", "duration", "engine", "entries", "ends_at"}.
 
 The JSON holds
   tempo         beats per minute (a half or double reading is harmless: cuts are sized in seconds)

@@ -30,6 +30,7 @@ Why these numbers (learned on real montages):
 from __future__ import annotations
 
 import argparse
+import atexit
 import json
 import re
 import shutil
@@ -126,6 +127,7 @@ def main() -> int:
         sys.exit("nothing to mix: the cut list has no cues, bed or moments")
 
     td = tempfile.mkdtemp(prefix="mixdown-")
+    atexit.register(shutil.rmtree, td, True)   # also when a step fails and exits
     ins, fl, labels, report = [], [], [], []
     n = 0
     # music cues
@@ -173,7 +175,7 @@ def main() -> int:
                   f"alimiter=limit=0.9:level=disabled:attack=3:release=60:latency=1,"
                   f"afade=t=in:st=0:d=0.08,afade=t=out:st={max(0.0, L - 0.12):.3f}:d=0.12,adelay={d}|{d},asplit[x{k}][s{k}]")
         mom_labels.append(f"[x{k}]")
-        if m.get("duck") and L >= DUCK_MIN_S:
+        if m.get("duck") and L >= DUCK_MIN_S and labels:   # no music cue: nothing to duck
             duck_labels.append(f"[s{k}]")
         else:
             fl.append(f"[s{k}]anullsink")

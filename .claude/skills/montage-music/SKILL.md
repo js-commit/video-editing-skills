@@ -1,7 +1,7 @@
 ---
 name: montage-music
 description: Score a montage with music the user has the rights to - choose 2-3 tracks that fit the story's moods from their own music folder or a royalty-free library, analyse beats and energy (librosa if installed, otherwise a built-in ffmpeg analysis), pick each cue's in-point (the band coming in, a hit aimed at a shot, a natural ending), set levels so the clips' own sound stays audible, and mix it all into one soundtrack. Use when asked to "find music for this video", "score this montage", "pick a song for this part", "different music for each day", "swap the intro song", "where should the song start", or "the music is too loud". home-video calls it for every montage.
-allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/*), Bash(python3 ${CLAUDE_SKILL_DIR}/../*/scripts/*), Bash(python3 ${CLAUDE_SKILL_DIR}/../../../tools/*), Bash(ffmpeg *), Bash(ffprobe *), Read, Write, Edit
+allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/*), Bash(python3 ${CLAUDE_SKILL_DIR}/../../../tools/*), Bash(ffmpeg *), Bash(ffprobe *), Read, Write, Edit
 ---
 
 # Montage music

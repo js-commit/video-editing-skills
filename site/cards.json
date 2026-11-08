@@ -1,0 +1,41 @@
+{
+  "_about": "Card text for the project page. build.py lists every skill in .claude/skills/; this file only gives each one a group, a one-line summary, a 'just say' example and an optional badge. A skill missing here still appears, under 'More', with the first sentence of its own description.",
+  "groups": [
+    {"id": "cut", "title": "Cut", "blurb": "From raw take to a clean first cut."},
+    {"id": "fill", "title": "Fill", "blurb": "B-roll, graphics and the lines you forgot to say."},
+    {"id": "polish", "title": "Polish", "blurb": "Notes, drafts, audio and shaky shots."},
+    {"id": "ship", "title": "Ship", "blurb": "Everything YouTube asks for, ready to paste."},
+    {"id": "life", "title": "Home videos", "blurb": "The trip, the dog, the birthday. Not for the channel."},
+    {"id": "tidy", "title": "Keep it tidy", "blurb": "Footage in, projects out, drive space back."},
+    {"id": "yours", "title": "Make it yours", "blurb": "It's plain text. Change anything."}
+  ],
+  "cards": {
+    "aroll-draft": {"group": "cut", "line": "Raw talking-head take in, first cut out. Retakes, false starts, mic checks and filler gone, every cut snapped to the waveform so no word gets clipped.", "say": "draft this a-roll", "star": true},
+    "multicam-angles": {"group": "cut", "line": "Shot with two cameras? Picks the angle for every cut, adds a face picture-in-picture where you show things, and stops the flicker.", "say": "pick the camera angles", "needs": "Resolve Studio"},
+    "talking-head-ffmpeg": {"group": "cut", "line": "The whole edit with no editing app: your cut plus b-roll as one JSON recipe that ffmpeg renders.", "say": "edit this with b-roll, no Resolve"},
+    "unboxing-cut": {"group": "cut", "line": "A long overhead unboxing becomes a paced, ASMR-style sequence: the box, the knife, the peel, the reveal.", "say": "cut the unboxing"},
+    "broll-brick-layer": {"group": "fill", "line": "Looks at your b-roll, matches shots to what you're saying, lays them on the timeline, then a second agent tries to veto every one.", "say": "lay b-roll on this timeline", "needs": "Resolve Studio"},
+    "broll-library": {"group": "fill", "line": "Every clip you've shot, described and searchable. Harvest the b-roll from finished edits and find it again next year.", "say": "have I ever shot a rainy street?"},
+    "motion-graphics": {"group": "fill", "line": "Animated stats, charts, callouts and lower thirds timed to your words, in your colours, rendered with the browser you already have.", "say": "add an animated stat here"},
+    "vo-gapfill": {"group": "fill", "line": "Missing a sentence? Writes the line in your on-camera voice and fills the gap with your own text-to-speech voice.", "say": "do a voiceover for that gap"},
+    "camera-ab-compare": {"group": "fill", "line": "Two phones, one walk: works out which phone shot what, pairs matching moments and builds the side-by-side.", "say": "compare these two phones side by side", "needs": "Resolve Studio"},
+    "edit-review-notes": {"group": "polish", "line": "Watch the draft, type or dictate notes in EditReview as you go, and Claude applies them. The next draft shows only what changed.", "say": "apply my review notes"},
+    "resolve-export-draft": {"group": "polish", "line": "A review draft of your Resolve timeline, rendered from the command line. No Deliver page.", "say": "render a draft"},
+    "voice-clear": {"group": "polish", "line": "Takes the room echo and noise out of your voice, on your Mac, only when you ask.", "say": "clean up my voice", "needs": "Apple silicon"},
+    "stabilize-clips": {"group": "polish", "line": "Smooths shaky handheld clips, measures whether it helped, and keeps the original when it didn't.", "say": "stabilize these clips"},
+    "ship-it": {"group": "ship", "line": "Two words from approved draft to ready to upload: master, loudness, title, chapters, thumbnails and a paste sheet.", "say": "ship it", "star": true},
+    "youtube-release": {"group": "ship", "line": "Title options in your style, a description with chapters and your links, and loudness fixed for YouTube.", "say": "write the title and chapters"},
+    "youtube-thumbnails": {"group": "ship", "line": "Thumbnails from your real footage, with the hook lifted from your own words, checked for privacy and legibility.", "say": "make thumbnails"},
+    "studio-thumbnails": {"group": "ship", "line": "Adds AI concepts from YouTube Studio's Ask Studio and Gemini to the pool, next to the real-footage ones.", "say": "Gemini thumbnails with my face"},
+    "shorts": {"group": "ship", "line": "Finds Shorts in your finished video, word-precise with a hook in the first two seconds, reframed for 9:16 and captioned.", "say": "make Shorts from this video"},
+    "home-video": {"group": "life", "line": "A trip, pet or family montage from a pile of phone clips, scored with music. A privacy mode keeps every frame on your Mac.", "say": "make a video of our trip"},
+    "montage-music": {"group": "life", "line": "Picks tracks you have the rights to, finds the beats and the right place to start, and mixes them under the clips.", "say": "pick a song for this part"},
+    "footage-triage": {"group": "tidy", "line": "Sorts an import dump into projects, the home-video archive, the b-roll library or the trash. You approve every move.", "say": "sort this import folder"},
+    "archive-project": {"group": "tidy", "line": "Done with a video? Keeps the finals and the good b-roll and clears the rest. Dry run first, copy and verify before any delete.", "say": "archive this project"},
+    "new-project": {"group": "tidy", "line": "A new project folder in your own layout, ready for footage.", "say": "start a new project called Backpack review"},
+    "setup": {"group": "yours", "line": "About ten minutes of skippable questions, and every skill knows where your stuff lives.", "say": "/setup"},
+    "customize": {"group": "yours", "line": "Say \"from now on...\" once and it remembers. Or ask it to change any skill, or write you a new one.", "say": "from now on, keep my jokes"},
+    "editing-coach": {"group": "yours", "line": "Learning to edit? J-cuts, pacing, colour in Resolve, stop motion, and feedback on your own clips.", "say": "how do I color correct in Resolve?"},
+    "aroll-benchmark": {"group": "yours", "line": "For tinkerers: scores the automatic cut against your own edit of the same take.", "say": "score the auto cut against my edit", "needs": "dev"}
+  }
+}

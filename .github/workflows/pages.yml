@@ -1,0 +1,35 @@
+# Publishes site/ to GitHub Pages (https://js-commit.github.io/video-editing-skills/).
+# build.py rebuilds the skill list from .claude/skills/*/SKILL.md, so a new or changed skill
+# shows up on the page with the next push. Skipped while the repository is private.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ["site/**", ".claude/skills/*/SKILL.md", ".claude/agents/*.md", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: ${{ !github.event.repository.private }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 site/build.py --out "$RUNNER_TEMP/site"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ runner.temp }}/site
+      - id: deployment
+        uses: actions/deploy-pages@v4

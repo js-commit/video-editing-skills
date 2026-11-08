@@ -96,8 +96,8 @@ once to start the file for the user.
   settings `youtube.made_for_kids`; ask the user the first time, never guess.
 - **Altered or synthetic content**: yes only for realistic AI-generated or
   altered people, places or events. AI help with titles, thumbnails, scripts or
-  captions does not count. Settings `youtube.contains_synthetic_media` or
-  `--synthetic-media true` per video.
+  captions does not count. Settings `youtube.contains_synthetic_media` (your
+  standing answer, shown on the paste sheet), or answer it in Studio per video.
 - **Category**: settings `youtube.category` (a name like `Education` or an id).
 - **Language**: settings `youtube.language` (helps captions and translations).
 
@@ -108,4 +108,4 @@ once to start the file for the user.
   your channel page. Right for review links and family videos.
 - **Private**: only you (and people you invite by email) can watch it.
 - **Scheduled**: uploaded private, goes public by itself at the time you set
-  (`--publish-at`).
+  in Studio (Visibility > Schedule).

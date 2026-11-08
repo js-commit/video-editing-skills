@@ -33,7 +33,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import platform
 import re
 import sys
 import time
@@ -42,7 +41,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "tools"))
 from vidkit import media, settings  # noqa: E402
-from vidkit.resolve import connect, log, timelines  # noqa: E402
+from vidkit.resolve import connect, log, timelines, youtube_upload_logged  # noqa: E402
 
 
 def all_items(tl):
@@ -89,27 +88,6 @@ def default_out_dir(tl) -> Path | None:
 
 def slug(text: str) -> str:
     return re.sub(r"-{2,}", "-", re.sub(r"[^a-z0-9]+", "-", text.lower())).strip("-") or "master"
-
-
-def resolve_log() -> Path | None:
-    if platform.system() == "Darwin":
-        return Path.home() / "Library/Application Support/Blackmagic Design/DaVinci Resolve/logs/davinci_resolve.log"
-    if platform.system() == "Windows":
-        base = os.environ.get("APPDATA", "")
-        return Path(base) / "Blackmagic Design" / "DaVinci Resolve" / "Support" / "logs" / "davinci_resolve.log"
-    return Path.home() / ".local/share/DaVinciResolve/logs/davinci_resolve.log"
-
-
-def upload_side_effect(path: str) -> bool:
-    """Did Resolve log a YouTube upload job for this file? (a YouTube preset can upload while rendering)"""
-    logf = resolve_log()
-    try:
-        with open(logf, errors="replace") as fh:
-            tail = fh.readlines()[-4000:]
-    except (OSError, TypeError):
-        return False
-    base = os.path.basename(path)
-    return any("WebUploader" in ln and base in ln for ln in tail)
 
 
 def main(argv=None) -> int:
@@ -232,7 +210,7 @@ def main(argv=None) -> int:
             log(f"RENDER INCOMPLETE: {probe['duration']:.1f}s on disk, {expected:.1f}s expected")
             return 3
         time.sleep(3)
-        uploaded = upload_side_effect(str(path))
+        uploaded = youtube_upload_logged(path)   # a YouTube preset can upload while rendering
         result = {"master": str(path), "duration_s": probe["duration"], "width": probe["width"],
                   "height": probe["height"], "vcodec": probe["vcodec"],
                   "bytes": path.stat().st_size, "resolve_also_uploaded_to_youtube": uploaded}

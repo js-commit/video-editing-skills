@@ -12,8 +12,10 @@ YouTube Studio, following the paste sheet. Nothing here talks to YouTube.
 Two modes:
 
 - **Review copy**: a draft the user uploads unlisted (or private) to watch the
-  cut on their phone. No loudness, no chapters needed: a working title and a
-  one-line description. Steps 1, 5, 6.
+  cut on their phone. No loudness, no transcript, no chapters: step 1, then a
+  `<master-stem>.release/` folder with just `titles.txt` (one working title)
+  and a one-line `description.txt`, `metadata.py check` on it for the paste
+  sheet, then steps 5 and 6.
 - **Release**: master, loudness, metadata, paste sheet, all steps.
 
 ## Before you start
@@ -26,8 +28,10 @@ Two modes:
   names the missing one: ask one short question, `settings.py set` it, re-run.
 
 Scripts: `scripts/render_master.py` (Resolve), `scripts/loudness.py`,
-`scripts/metadata.py`. Each says on stdout what it did; exit 0 ok, 3 "fix and
-re-run", 4 a setting is missing.
+`scripts/metadata.py`. Each says on stdout what it did and exits 0 when all is
+well and 4 when a setting is missing. Otherwise: `loudness.py` 1 = needs
+`--fix`; `render_master.py` 2 = offline media or bad arguments, nothing
+rendered, 3 = the render failed; `metadata.py` 3 = fix and re-run.
 
 ## Steps
 

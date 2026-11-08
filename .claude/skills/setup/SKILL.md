@@ -5,7 +5,7 @@ description: First-run onboarding for this video-editing toolkit - checks what t
 
 # setup
 
-Gets a new user from "just cloned it" to "ready to edit" in about five
+Gets a new user from "just cloned it" to "ready to edit" in about ten
 minutes. Every question can be skipped; skills ask for anything still missing
 the first time they need it, so nothing here is mandatory.
 

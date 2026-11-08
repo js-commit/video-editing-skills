@@ -28,6 +28,13 @@ Read `user/preferences.md` `## vo-gapfill`. The first time, ask what the user us
 Cloning a voice needs a few minutes of clean reference audio of the speaker; keep those
 takes in one place the user names (never copied into projects).
 
+**Only the user's own voice, or one whose owner gave written permission.** Never clone or
+generate anyone else's voice, and never put words in a real person's mouth they did not
+approve. A voiceover in someone else's cloned voice (even with permission) is altered or
+synthetic content: say so, so the upload's disclosure is answered yes
+(`youtube.contains_synthetic_media` or the paste sheet). Cloning your own voice for your own
+voiceover needs no disclosure.
+
 ## 1. Write the script in the speaker's voice
 
 - Source material: the talking points (chat or the gap marker's note) + the take's
@@ -92,7 +99,7 @@ regenerate the sentence alone and splice it in at the quietest 20 ms of the paus
 {
   "project": "my-video",
   "timeline": "aroll draft",
-  "never_touch": ["... V0", "... V1"],
+  "never_touch": ["my-video backup", "my-video original"],
   "audio_path": "/abs/path/audio/vo-intro.tight.wav",
   "bin": "audio",
   "marker_name": "VO: intro",

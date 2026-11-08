@@ -22,6 +22,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "tools"))
+from vidkit import media  # noqa: E402  (finds ffmpeg/ffprobe, or says how to install them)
+
 
 def run(cmd):
     p = subprocess.run(cmd, capture_output=True, text=True)
@@ -31,14 +34,14 @@ def run(cmd):
 
 
 def probe_duration(path):
-    p = run(["ffprobe", "-v", "error", "-show_entries", "format=duration",
+    p = run([media.ffprobe(), "-v", "error", "-show_entries", "format=duration",
              "-of", "csv=p=0", str(path)])
     return float(p.stdout.strip())
 
 
 def detect_silences(path, db, min_d):
     p = subprocess.run(
-        ["ffmpeg", "-hide_banner", "-i", str(path),
+        [media.ffmpeg(), "-hide_banner", "-i", str(path),
          "-af", f"silencedetect=n={db}dB:d={min_d}", "-f", "null", "-"],
         capture_output=True, text=True)
     starts = [float(m) for m in
@@ -72,7 +75,7 @@ def main():
     long_pauses = [(s, e) for s, e in silences if e - s > max_pause]
 
     if not long_pauses:
-        run(["ffmpeg", "-y", "-hide_banner", "-i", str(src),
+        run([media.ffmpeg(), "-y", "-hide_banner", "-i", str(src),
              "-c:a", "pcm_s16le", str(out)])
         print(json.dumps({"output": str(out), "pauses_found": len(silences),
                           "pauses_shortened": 0, "removed_s": 0.0,
@@ -92,7 +95,7 @@ def main():
         for i, (a, b) in enumerate(keeps))
     labels = "".join(f"[a{i}]" for i in range(len(keeps)))
     fc = f"{parts}{labels}concat=n={len(keeps)}:v=0:a=1[out]"
-    run(["ffmpeg", "-y", "-hide_banner", "-i", str(src),
+    run([media.ffmpeg(), "-y", "-hide_banner", "-i", str(src),
          "-filter_complex", fc, "-map", "[out]", "-c:a", "pcm_s16le",
          str(out)])
 

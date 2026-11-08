@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Survey a project's footage: what every clip is, how shaky, how busy and how loud, second
-by second, without anyone looking at a frame. Contact sheets too, in privacy modes "frames" and "local".
+by second, without anyone looking at a frame. Contact sheets too, in privacy mode "frames".
 
   survey.py PROJECT [--no-sheets] [--force]
 
@@ -14,8 +14,7 @@ and writes:
                         shake (frame-to-frame jitter left after removing the camera path,
                         px per 1/15 s at 960 px wide), and audio level every 0.5 s (dBFS)
   work/survey.md        one line per clip: the facts, steady stretches, loud moments, flags
-  work/sheets/<id>.jpg  contact sheets (skipped with --no-sheets or in privacy "no-frames"; in "local"
-                        they are for the local vision model only)
+  work/sheets/<id>.jpg  contact sheets (privacy "frames" only; skipped with --no-sheets)
 
 The shake number is a triage hint: for a real measurement of a clip you plan to use, run
 stabilize-clips' `stabilize.py --analyze`. Already surveyed clips are skipped (--force redoes).
@@ -141,7 +140,7 @@ def motion_profile(path: str, disp_w: int, disp_h: int) -> dict:
         w, h = 160, max(2, round(160 * disp_h / max(1, disp_w) / 2) * 2)
     else:
         h, w = 160, max(2, round(160 * disp_w / max(1, disp_h) / 2) * 2)
-    to960 = 960 / max(w, h) if disp_w >= disp_h else 960 / max(w, h)
+    to960 = 960 / max(w, h)
     prev, prof_prev = None, None
     moves, acts = [], []
     for buf in gray_frames(path, w, h):

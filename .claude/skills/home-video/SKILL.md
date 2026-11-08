@@ -29,9 +29,10 @@ python3 $K/make_draft.py PROJECT --final  # the keeper, full size, after the use
   everything below (shot length, teaser, song count, "I'm experienced, skip the explanations").
 - **Privacy mode, asked once.** Personal footage can be sensitive (children, health, homes). Look
   for a `privacy:` bullet under `## home-video`. If there is none, ask once, offering three ways:
-  **frames** (Claude reads contact sheets of the footage: the best picks), **local** (only a
-  vision model running on this computer looks at frames and describes them; Claude picks from
-  its text and the survey numbers; no frame leaves the computer, only those text descriptions; needs
+  **frames** (Claude reads contact sheets of the footage, so those stills are sent to Anthropic's
+  servers: the best picks), **local** (only a vision model running on this computer looks at
+  frames and describes them; Claude picks from its text and the survey numbers; no frame leaves
+  the computer, only those text descriptions; needs
   `python3 tools/vlm-describe/vlm_describe.py --check` to say available, Apple silicon Mac), or
   **no-frames** (nothing looks at a frame; Claude works from motion, sound and timing numbers and
   the user's own picks). For a personal archive of family footage suggest `local` when it can
@@ -64,8 +65,8 @@ Take what you can from the request, state your assumptions in one line, keep goi
   (a clip sent through a messenger or a cloud backup is re-compressed: look for the original by
   date), portrait, no sound, high frame rate (real slow motion available).
 - In privacy `frames` it also writes a contact sheet per clip (`work/sheets/<id>.jpg`, tiles
-  labelled with the clip time). In privacy `local` the sheets are written too, but only for the
-  local model: never Read them.
+  labelled with the clip time). Other modes get no sheets (the local model samples its own
+  frames).
 - Privacy `local` (optional in `frames`): `describe.py PROJECT` has the on-device vision model
   describe every clip (people seen, setting, action, camera, quality, a 1-5 appeal guess, one
   phrase per sampled frame) into `work/descriptions.md`. One heavy job; resumable.
@@ -178,14 +179,16 @@ Ending
 2. Hand the draft to the user (section 6). They review it in **EditReview** (or any player and
    send notes as "m:ss what"). Short rounds together are the loop.
 3. An agent review (`montage-reviewer`, Opus) runs **only when the user says yes**, at most once
-   per version, after you tell them it costs a few dollars of usage. In privacy `local` it gets
-   the cut list, QC, survey and `work/descriptions.md`, never frames; in `no-frames` numbers only.
+   per version, after you tell them it uses a noticeable share of their plan's usage. In privacy
+   `local` it gets the cut list, QC, survey and `work/descriptions.md`, never frames; in
+   `no-frames` numbers only.
 
 ## 6. Hand over
 
 The draft by absolute path, which version it is, and five lines: length; the cue sheet; the
 climax treatment; what QC caught and what you fixed; open questions (held shots, copies used,
-reverted stabilizations). "Local file, nothing uploaded."
+reverted stabilizations). "The draft is a local file; nothing was published" (in privacy
+`frames` add: "contact sheets of the footage were sent to Claude").
 Open it: `open -a EditReview <draft>` (or `open apps/edit-review/prebuilt/EditReview.app --args <draft>`),
 or the user's player. Teach the review loop once: play, and when something bugs you type a note
 and press Return (SPACE pauses; ↑/↓ jump cut to cut; on later drafts ⌥↑/⌥↓ step through what changed).
@@ -214,8 +217,9 @@ and press Return (SPACE pauses; ↑/↓ jump cut to cut; on later drafts ⌥↑/
 - DaVinci Resolve Studio users who want to hand-finish (colour, dissolves, titles):
   `python3 $K/resolve_timeline.py work/cut_vN.json work/mix_vN.wav` builds a new timeline (clips
   on V1 frame-exact, the mix on A1). Free Resolve: import the final mp4, or the clips by hand.
-- Uploading is the **youtube-release** skill (on the user's explicit go; the music must be licensed
-  for it, see montage-music). Archiving the project is **archive-project**.
+- Getting it ready for YouTube (loudness, title, description, a paste sheet the user follows to
+  upload in Studio) is the **youtube-release** skill, on the user's explicit go; the music must be
+  licensed for that, see montage-music. Archiving the project is **archive-project**.
 
 ## Hard rules
 

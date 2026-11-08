@@ -92,7 +92,7 @@ def qc(render: str, job: dict, mix: str | None = None) -> dict:
     P = re.search(r"Peak:\s+(-?[\d.]+) dBFS", summ)
     integ = float(I.group(1)) if I else None
     tp = float(P.group(1)) if P else None
-    if tp is not None and tp > -0.5:
+    if tp is not None and tp > -1.0:
         warn.append(f"true peak {tp} dBTP: over -1 dBTP can distort on phones and TVs")
     if integ is not None and (integ < -26 or integ > -10):
         warn.append(f"integrated loudness {integ} LUFS: far from the -14..-18 most players expect")

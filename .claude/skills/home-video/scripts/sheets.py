@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Contact sheets: a grid of stills, each labelled with its time, for Claude (or you) to read.
-Refused when the project's privacy mode is "no-frames".
+Refused unless the project's privacy mode is "frames".
 
   sheets.py PROJECT                         one sheet per clip that has none yet -> work/sheets/<id>.jpg
   sheets.py PROJECT --clips ID [ID ...]     just these clips (--force to redo)

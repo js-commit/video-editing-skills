@@ -8,7 +8,7 @@ folder that holds every decision as a file, so any session can pick up where the
   work/clips.json        clip id -> absolute path (footage is read in place, never copied)
   work/meta/<id>.json    survey numbers per clip (survey.py)
   work/survey.md         one line per clip: what the numbers say (Claude reads this)
-  work/sheets/           contact sheets (privacy "frames" and "local"; in "local" only the local model reads them)
+  work/sheets/           contact sheets (privacy "frames" only; the local model samples its own frames)
   work/descriptions.json what the local vision model saw per clip (describe.py; privacy "local", optional in "frames")
   work/picks.json        the story: sections, music, cuts (Claude or the picker agents write it)
   work/music/            beat analyses of the chosen tracks
@@ -35,8 +35,7 @@ PRIVACY = ("frames", "local", "no-frames")
 # frames:    Claude (and its agents) may read contact sheets of the footage.
 # local:     only the vision model on this computer sees frames (describe.py); Claude works from its text.
 # no-frames: nothing looks at a frame; Claude works from survey numbers and the user's notes.
-SHEETS_FOR_CLAUDE = ("frames",)
-SHEETS_MADE = ("frames", "local")
+SHEETS_MADE = ("frames",)   # contact sheets exist only where Claude may read them
 
 
 def log(*a):

@@ -198,7 +198,8 @@ The picks become `<dest>/thumb-1..3` in that order; an existing thumb-N is moved
 
 Per candidate: id, absolute path, size in MB and pixels, concept, hook, frame source.
 What the privacy pass and the refuter caught and what you changed. The pick and where
-thumb-1..3 landed. Which font and engine were used. Whether it was set on YouTube.
+thumb-1..3 landed. Which font and engine were used. The Studio steps for setting thumb-1
+(step 9): the user sets it.
 
 ## Restyle any time
 

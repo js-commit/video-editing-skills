@@ -37,9 +37,10 @@ import tempfile
 import time
 
 try:
+    import cv2
     import numpy as np
 except ImportError:
-    sys.exit("this script needs numpy: python3 -m pip install numpy")
+    sys.exit("this script needs numpy opencv-python: python3 -m pip install numpy opencv-python")
 
 from build_ab_project import connect, window_transform
 
@@ -57,7 +58,6 @@ def extent(png, axis):
     column (a 360 px band of a 2160 px frame peaks at 0.17), so any fixed
     threshold near 0.25 reads the whole still as black.
     """
-    import cv2
     img = cv2.imread(png, cv2.IMREAD_GRAYSCALE)
     if img is None:
         return None

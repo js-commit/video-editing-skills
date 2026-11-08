@@ -53,7 +53,7 @@ Layout notes learned the hard way (Resolve 21):
   width == half) or pre-compose.
 
 Usage:
-  build_ab_project.py create job.json [--fresh]   # build project + timeline
+  build_ab_project.py create job.json [--fresh | --replace]   # build project + timeline
   build_ab_project.py inspect job.json            # dump imported clip props
   build_ab_project.py stills job.json OUTDIR T [T ...]   # grab stills at
                                                   # timeline seconds T for review
@@ -61,11 +61,16 @@ Usage:
                                                   # NO preset -> no upload path)
 
 Resolve (Studio) must be running. `create` on an existing project (without
---fresh) reuses it: media already in the pool is not re-imported, and only
-the job's named timeline is deleted and rebuilt — other timelines are left
-alone. --fresh deletes the WHOLE project named in the job JSON first, after
-exporting it to <job dir>/resolve-backups/<name>-<time>.drp (no backup, no delete).
-`stills` and `render` operate on the job's named timeline.
+--fresh) reuses it: media already in the pool is not re-imported, and the
+job's named timeline is built next to the other timelines, which are left
+alone. If a timeline of that name already exists, `create` refuses: --replace
+deletes it and rebuilds it (any hand edits made to it in Resolve are lost), or
+give the job a new "timeline" name. A timeline with "backup" in its name, on
+settings editor.never_touch_timelines or on the job's "never_touch" list is
+never deleted or rebuilt. --fresh deletes the WHOLE project named in the job
+JSON first, after exporting it to <job dir>/resolve-backups/<name>-<time>.drp
+(no backup, no delete). `stills` and `render` operate on the job's named
+timeline.
 """
 import argparse
 import json
@@ -125,7 +130,7 @@ def delete_clips_checked(tl, items, ripple=False):
     """Timeline.DeleteClips, guarded against the Edit-page gate.
 
     DeleteClips returns False and deletes nothing while the UI sits on
-    another page (measured upstream on Studio 21: three retries against
+    another page (measured on Studio 21: three retries against
     132 valid items all False on Fairlight; one OpenPage("edit") then
     True — a page gate, not a lock). A first attempt has also been seen
     to fail once where an immediate retry succeeded, so try twice.
@@ -158,7 +163,7 @@ def verify_render_output(path, expected_s, fw, fh):
 
     SetRenderSettings applies ON TOP of whatever Deliver-page state a
     loaded preset left behind, and that base state is unreadable (the API
-    has no GetRenderSettings) — measured upstream: an 'Audio Only' base
+    has no GetRenderSettings) — measured: an 'Audio Only' base
     produced a video-less mp4 while the queued job read back
     IsExportVideo=True. The rendered file is the only witness that video
     was actually exported. One ffprobe covers duration and the stream;
@@ -410,11 +415,13 @@ def select_timeline(proj, job):
 def cmd_create(args):
     job = load_job(args.job)
     fw, fh, fps = job.get("width", 3840), job.get("height", 2160), job.get("fps", 30)
+    name = job["project"]
+    tl_name = job.get("timeline", TIMELINE_NAME)
+    # backups, settings editor.never_touch_timelines, the job's "never_touch" list
+    vidkit.resolve.check_never_touch(job, tl_name)
 
     resolve = connect()
     pm = resolve.GetProjectManager()
-    name = job["project"]
-    tl_name = job.get("timeline", TIMELINE_NAME)
     existing = pm.GetProjectListInCurrentFolder() or []
     proj = None
     if name in existing:
@@ -433,11 +440,16 @@ def cmd_create(args):
                 sys.exit(f"DeleteProject({name!r}) failed")
             print(f"deleted existing project {name!r}")
         else:
-            # Reuse the project; only the job's named timeline is (re)built.
+            # Reuse the project; only the job's named timeline is built.
             proj = pm.LoadProject(name)
             if proj is None:
                 sys.exit(f"LoadProject({name!r}) failed")
-            print(f"reusing project {name!r} (rebuilding timeline {tl_name!r})")
+            there = any(t.GetName() == tl_name for t in vidkit.resolve.timelines(proj))
+            if there and not args.replace:
+                sys.exit(f"refusing: project {name!r} already has a timeline {tl_name!r}, and rebuilding it "
+                         f"would lose any edits made to it. Re-run with --replace to delete and rebuild it, "
+                         f"or set a new \"timeline\" name in {args.job}.")
+            print(f"reusing project {name!r} ({'replacing' if there else 'building'} timeline {tl_name!r})")
     if proj is None:
         proj = pm.CreateProject(name)
         if proj is None:
@@ -455,6 +467,8 @@ def cmd_create(args):
     for i in range(1, (proj.GetTimelineCount() or 0) + 1):
         old = proj.GetTimelineByIndex(i)
         if old and old.GetName() == tl_name:
+            if not args.replace:     # refused above; never delete without --replace
+                sys.exit(f"refusing: timeline {tl_name!r} exists; --replace rebuilds it")
             if not mp.DeleteTimelines([old]):
                 sys.exit(f"DeleteTimelines({tl_name!r}) failed")
             print(f"deleted existing timeline {tl_name!r}")
@@ -516,7 +530,8 @@ def cmd_create(args):
             if diff == 0:
                 break
             if got == 0:
-                # ghost append (launch race, see build_short): nothing landed,
+                # ghost append (just after launch, Resolve can return an item
+                # that never landed): nothing landed,
                 # so a failed delete of the ghost handle is expected —
                 # best-effort delete, then retry the same params
                 tl.DeleteClips([ritem])
@@ -624,8 +639,8 @@ def cmd_stills(args):
                       file=sys.stderr)
             # ExportCurrentFrameAsStill exports what the viewer currently
             # SHOWS, which lags the park - without the settle it exported
-            # the previous park's frame (identical md5s, measured
-            # measured). Poll the readback, then let the viewer render.
+            # the previous park's frame (identical md5s, measured).
+            # Poll the readback, then let the viewer render.
             for _ in range(20):
                 if tl.GetCurrentTimecode() == tc:
                     break
@@ -670,10 +685,8 @@ def cmd_render(args):
         "ExportAudio": True,
         "FormatWidth": fw,
         "FormatHeight": fh,
-        # Restrict-to bitrate in kb/s. 40 Mbps HEVC ~= a mirrorless camera's own
-        # camera footage; comfortably above phone-source quality while
-        # staying hardware-decodable on playback devices.
-        "VideoQuality": 40000,
+        # No bitrate key: the API accepts "VideoQuality" and ignores it
+        # (measured). The bitrate is the Deliver page's Quality setting.
     })
     job_id = proj.AddRenderJob()
     if not job_id:
@@ -715,6 +728,8 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     c = sub.add_parser("create"); c.add_argument("job"); c.add_argument("--fresh", action="store_true")
+    c.add_argument("--replace", action="store_true",
+                   help="delete and rebuild the job's timeline if it already exists (its edits are lost)")
     i = sub.add_parser("inspect"); i.add_argument("job")
     s = sub.add_parser("stills"); s.add_argument("job"); s.add_argument("outdir")
     s.add_argument("seconds", nargs="+", type=float)

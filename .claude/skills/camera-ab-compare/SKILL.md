@@ -25,8 +25,8 @@ throughout. Compare like with like only: same scene, same subject, same moment, 
   project; copy it elsewhere (an external drive, a NAS) only when asked.
 - Present the pairing table and segment plan to the user before building the Resolve project,
   unless they asked for the finished thing and said they'll review it at the end.
-- Python packages: `clip_survey.py` and `verify_geometry.py` need numpy; `align_centers.py`
-  needs opencv-python (`python3 -m pip install numpy opencv-python`; ask before installing).
+- Python packages: `clip_survey.py` needs numpy; `align_centers.py` and `verify_geometry.py`
+  need numpy and opencv-python (`python3 -m pip install numpy opencv-python`; ask before installing).
 
 ## 1. Identify which device shot each file
 
@@ -153,10 +153,16 @@ is named `Resolve`). The asset recipes use macOS encoders and fonts (`prores_vid
 Helvetica Neue); on Windows/Linux use `prores_ks` and a font you have, as noted in the recipes. Write a job JSON (schema in the script docstring) and run:
 
 ```
-python3 ${CLAUDE_SKILL_DIR}/scripts/build_ab_project.py create <job.json> [--fresh]
+python3 ${CLAUDE_SKILL_DIR}/scripts/build_ab_project.py create <job.json> [--fresh | --replace]
 # --fresh replaces the whole Resolve project named in the job (after exporting it to
 # <work>/resolve-backups/<name>-<time>.drp). Ask the user before using it.
+# --replace: the job's timeline already exists. Without it, create refuses rather than
+# delete it; with it, that timeline is deleted and rebuilt and any hand edits to it are
+# lost. Ask first, or give the job a new "timeline" name.
 ```
+
+Timelines with "backup" in the name, on settings `editor.never_touch_timelines` or on
+the job's `"never_touch"` list are never rebuilt.
 
 Left clip V1 (with its audio), right clip V2 (video only), title overlay V3; per-pair
 zoom/pan fills each 1920x2160 half exactly. The script encodes the non-obvious Resolve API
@@ -213,6 +219,7 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/build_ab_project.py render <job.json> <work>
 ```
 
 Renders mp4/H.265 (H.264 fallback) at timeline resolution into the project and
-ffprobe-verifies duration. Then ffprobe the OUTPUT for codec / resolution / fps / bitrate,
+ffprobe-verifies duration. The scripting API cannot set the bitrate, so it is
+whatever the Deliver page's Quality setting is (Automatic by default). Then ffprobe the OUTPUT for codec / resolution / fps / bitrate,
 and spot-check 2-3 frames pulled from the rendered file itself. Give the user a contact sheet
 of frames from the finished render plus the absolute path.

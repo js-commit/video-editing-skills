@@ -31,7 +31,7 @@ extract; parse the file tail bytes directly (read last ~400 KB, regex):
   shooter who cycled lenses on video is caught even when the filename says
   nothing — don't assume video pairs are wide 1x.
 
-Older apps (the older phone) write NO lens info into videos at all. Then:
+Older camera apps write NO lens info into videos at all. Then:
 verify by FOV comparison against the paired clip / a photo with known EXIF
 lens, on extracted frames. Only caption what was verified — and check
 start/mid/end frames: the SEF zoom covers the start of the clip only, so a
@@ -60,7 +60,7 @@ since a landscape source at half-fill zoom 1.0 spills across the center seam.
 ## Photos (JPG)
 
 Full EXIF: `Model`, `FocalLength`, `FocalLengthIn35mmFormat`, `LensModel`
-(Fold<N>), `DigitalZoomRatio`. Typical Samsung lens table:
+(some models only), `DigitalZoomRatio`. Typical Samsung lens table:
 
 | lens | 35mm equiv | notes |
 |---|---|---|

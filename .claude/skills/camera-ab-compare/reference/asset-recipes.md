@@ -8,9 +8,9 @@ with a misleading "Either text, a valid file..." error. Pass label text via
 
 Quality: every `scale=` in composite work gets `:flags=lanczos` (ffmpeg's
 default bicubic visibly softens the punch-in upscales); intermediates stay
-PNG end-to-end (no JPEG round-trips). The render restricts to 40000 kb/s
-HEVC (about a mirrorless camera's own bitrate; hardware-decodable) — set in the
-build script, not a preset.
+PNG end-to-end (no JPEG round-trips). The render's bitrate cannot be set
+from the script (the API accepts `VideoQuality` and ignores it): it is the
+Deliver page's Quality setting.
 
 ## Title overlay PNG (transparent, per-half bottom labels)
 

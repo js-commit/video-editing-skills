@@ -3,7 +3,8 @@
 
 Builds a fake project (footage, proxies, caches, drafts, a recipe, a fake .drp)
 in a temporary folder with its own settings file (VES_SETTINGS), then runs a
-scan, a clean, and the lean, keep and recipe archives, checking what survives.
+scan, a clean, and the lean, keep and recipe archives, checking what survives,
+and tries every guard (edited plans, drives, home folders, overwrites).
 Your real settings and projects are never touched.
 
     python3 selftest.py              # temp folder, removed afterwards
@@ -291,13 +292,89 @@ def main() -> int:
     rc, out, err = run(env, "archive", "demo-guard", "--broll", "skip")
     check(rc == 1 and any("no final" in b for b in out.get("blockers", [])), "lean without a final blocks")
     rc, out, err = run(env, "clean", str(p), expect=0)
-    plan = json.loads(Path(out["plan"]).read_text())
-    plan["deletes"].append({"path": str(elsewhere / "stock" / "skyline.mp4"), "rel": "../x", "size": 0,
-                            "mtime": 0, "category": "evil"})
-    Path(out["plan"]).write_text(json.dumps(plan))
+    plan_file = Path(out["plan"])
+    good = json.loads(plan_file.read_text())
+    sky = elsewhere / "stock" / "skyline.mp4"
+    evil = {"path": str(sky), "rel": "../../elsewhere/stock/skyline.mp4", "size": sky.stat().st_size,
+            "mtime": sky.stat().st_mtime, "category": "evil"}
+    cache_file = p / "CacheClip" / "render.bin"
+
+    def edited(**change):
+        plan_file.write_text(json.dumps(dict(good, **change)))
+        return run(env, "execute", str(plan_file), "--yes")
+
+    rc, _, err = edited(deletes=good["deletes"] + [evil])
+    check(rc == 1 and "REFUSED" in err and sky.is_file() and cache_file.exists(),
+          "execute refuses a plan naming a file outside the project (nothing deleted)")
+    rc, _, err = edited(project=str(root.resolve()), project_name=root.resolve().name,
+                        deletes=[dict(evil, path=str(sky.resolve()), rel="elsewhere/stock/skyline.mp4")])
+    check(rc == 1 and "REFUSED" in err and sky.is_file(), "execute refuses a plan aimed at a folder holding the projects")
+    rc, _, err = edited(project=str((root / "projects").resolve()), project_name="projects")
+    check(rc == 1 and "REFUSED" in err and cache_file.exists(), "execute refuses a plan aimed at the projects folder")
+    rc, _, err = edited(project_name="another-project")
+    check(rc == 1 and "REFUSED" in err and cache_file.exists(), "execute refuses a plan whose project name was changed")
+    title = p / "graphics" / "title.png"
+    rc, _, err = edited(copies=[{"src": str(title), "dst": str(root / "stray.png"), "size": title.stat().st_size,
+                                 "mtime": 0, "role": "evil"}])
+    check(rc == 1 and "REFUSED" in err and not (root / "stray.png").exists(),
+          "execute refuses a plan copying outside its destinations")
+    rc, _, _ = edited()
+    check(rc == 0 and not cache_file.exists() and sky.is_file(), "the plan as the dry run wrote it still runs")
+
+    # home-video cut lists count as recipes (cut_final.json over cut_vN.json)
+    for name in ("cut_v1.json", "cut_v2.json", "cut_final.json"):
+        write(p / "work" / name, json.dumps({"schema": "home-video-cut/1", "cuts": [
+            {"file": str(p / "footage" / "clipA.mp4"), "in_s": 0, "out_s": 1, "record_s": 0}]}))
+    rc, out, err = run(env, "scan", "demo-guard", expect=0)
+    check("work/cut_final.json" in out.get("recipes", []) and "work/cut_v2.json" not in out.get("recipes", []),
+          "a home-video cut list is found as a recipe (cut_final.json wins)")
+
+    # folders that must never be "the project": a home folder and its standard folders
+    home = root / "home" / "sam"
+    std = ("Desktop", "Documents", "Downloads", "Movies", "Music", "Pictures")
+    for d in std:
+        (home / d / "some-folder").mkdir(parents=True, exist_ok=True)
+    henv = dict(env, HOME=str(home), USERPROFILE=str(home))
+    for target in [home] + [home / d for d in std]:
+        rc, _, err = run(henv, "scan", str(target))
+        check(rc != 0 and "refusing" in err, f"refuses {'the home folder' if target == home else '~/' + target.name}")
+    rc, _, err = run(env, "scan", str(root))
+    check(rc != 0 and "refusing" in err, "refuses a folder that holds the projects folder")
+
+    # drive roots: checked on the guard itself (no drive gets mounted for a test)
+    for k in [k for k in os.environ if k.startswith("VES_")]:
+        del os.environ[k]
+    os.environ["VES_SETTINGS"] = str(settings_file)
+    sys.path.insert(0, str(HERE))
+    import archive_project as AP
+    for d in ("/Volumes/SomeDrive", "/media/sam/SomeDrive", "/run/media/sam/SomeDrive", "/mnt/SomeDrive"):
+        check(AP.project_guard(Path(d)) is not None, f"refuses the drive root {d}")
+    local = ["/System/Volumes/VM", "/System/Volumes/Preboot", "/boot/efi"]   # local system mounts, never a share
+    if hasattr(os, "getuid"):
+        local.append(f"/run/user/{os.getuid()}")
+    mounted = next((m for m in local if os.path.ismount(m) and len(Path(m).parts) >= 3), None)
+    if mounted:
+        check(AP.project_guard(Path(mounted)) is not None, f"refuses the mounted drive {mounted}")
+    check(AP.project_guard(p.resolve()) is None, "a real project folder passes the guard")
+
+    # a same-size but different file at the destination is not "already there"
+    p = build_project(root, "demo-hash", elsewhere)
+    fin = archive / "final-videos" / "demo-hash"
+    fin.mkdir(parents=True)
+    (fin / "final.mp4").write_bytes(os.urandom((p / "output" / "final.mp4").stat().st_size))
+    rc, out, err = run(env, "archive", "demo-hash", "--broll", "skip", expect=0)
+    rc, res, err = run(env, "execute", out["plan"], "--yes")
+    check(rc == 1 and bool(res.get("copy_failed")) and (p / "footage" / "clipA.mp4").is_file(),
+          "a same-size different file at the destination stops the archive (nothing deleted)")
+
+    # a recipe already in the finals folder is kept; the new one is saved beside it
+    p = build_project(root, "demo-recipe2", elsewhere)
+    fin = archive / "final-videos" / "demo-recipe2"
+    write(fin / "recipe_v2.json", '{"old": true}')
+    rc, out, err = run(env, "archive", "demo-recipe2", "--mode", "recipe", "--broll", "done", expect=0)
     rc, res, err = run(env, "execute", out["plan"], "--yes", expect=0)
-    check((elsewhere / "stock" / "skyline.mp4").is_file() and res.get("left_behind"),
-          "a planned path outside the project is never deleted")
+    check(rc == 0 and json.loads((fin / "recipe_v2.json").read_text()) == {"old": True}
+          and len(list(fin.glob("recipe_v2.*.json"))) == 1, "an earlier recipe in the finals folder is never overwritten")
 
     print(f"\n{'ALL PASSED' if not FAILS else f'{len(FAILS)} FAILED'}")
     if not a.root:

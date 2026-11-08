@@ -17,9 +17,15 @@ restore or move an archive, or a run did something unexpected.
 ```
 
 `finals_dir` defaults to `<archive_dir>/final-videos`. Nothing is ever overwritten:
-an identical file already at the destination is skipped; a different thumbnail or
-extra is saved beside it with a timestamp; a different final or project file blocks
-the plan (an earlier archive with the same name: rename one).
+an identical file already at the destination (same SHA-256) is skipped; a different
+thumbnail, extra or recipe is saved beside it with a timestamp; a different final or
+project file blocks the plan (an earlier archive with the same name: rename one).
+
+The folder you archive must be one project's own folder. A drive (`/Volumes/<name>`,
+a mount point), a home folder, the standard folders in it (Desktop, Documents,
+Downloads, Movies, Music, Pictures...) and any folder that is or holds one of the
+folders from settings (projects, inbox, archive, finals, b-roll library, home videos,
+music) are refused, by the dry run and again by `execute`.
 
 ## The reference gate
 
@@ -46,8 +52,9 @@ the `.drp` first when you can.
 ## Recipe mode
 
 A recipe is the JSON an ffmpeg skill renders from (talking-head-ffmpeg's
-`work/talking-head/recipe_vN.json`, home-video's cut recipe). The newest version of
-each recipe family is used (`recipe_v3.json` over `recipe_v2.json`); `--recipe FILE`
+`work/talking-head/recipe_vN.json`, home-video's `work/cut_vN.json`). The newest version
+of each recipe family is used (`recipe_v3.json` over `recipe_v2.json`, home-video's
+`cut_final.json` over any `cut_vN.json`); `--recipe FILE`
 picks one by hand. Everything it plays is copied with its sidecars, external files
 are bundled into `external/` unless they already live somewhere durable (the
 archive, finals, b-roll library, home-videos or music folders from settings), and the
@@ -77,8 +84,10 @@ ffmpeg recipes already point at the archive folder; after copying them back, run
 and a `.plan.txt` beside it (every copy and delete, one per line, with sizes). The
 plan holds `copies` (src, dst, size, mtime, role), `deletes` (path, size, mtime,
 category), `repoint`, `blockers`, `warnings`. `execute` refuses a plan with blockers,
-re-checks every file's size and time before deleting it (changed files are skipped),
-and never deletes a path outside the project folder, even if the plan names one.
+and refuses (before copying or deleting anything) a plan whose project folder fails
+the guards above or that names a delete outside that folder or a copy outside its
+destinations: a plan edited by hand never runs. It re-checks every file's size and
+time before deleting it (changed files are skipped).
 
 ## Exit codes
 

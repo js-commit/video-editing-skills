@@ -25,6 +25,7 @@ import argparse
 import json
 import re
 import sys
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "tools"))
@@ -76,7 +77,7 @@ def main(argv=None) -> int:
         return 1
     out_file.parent.mkdir(parents=True, exist_ok=True)
     if out_file.exists():
-        out_file = out_file.with_name(f"{out_file.stem}-{__import__('time').strftime('%Y%m%d-%H%M%S')}.drp")
+        out_file = out_file.with_name(f"{out_file.stem}-{time.strftime('%Y%m%d-%H%M%S')}.drp")
     ok = bool(pm.ExportProject(a.project, str(out_file), not a.no_stills))
     size = out_file.stat().st_size if out_file.exists() else 0
     print(json.dumps({"exported": ok and size > 0, "project": a.project, "drp": str(out_file),

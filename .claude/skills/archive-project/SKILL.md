@@ -102,7 +102,9 @@ project, the files are tidied, not safer. Mention this once, briefly.
 - Dry run first, always. Only `execute ... --yes` changes anything, and only after
   the user approved that plan's list. Never edit a plan to add deletions.
 - Copy, verify, then delete; a failed copy stops everything before any delete.
-- Never delete outside the project folder. Never follow symlinks out of it.
+- Never delete outside the project folder. Never follow symlinks out of it. The script
+  refuses a drive, a home folder (or its Desktop, Documents, Movies...) and any folder
+  holding your projects, archive or library as "the project"; never work around that.
 - Sidecars travel with their clip (`<stem>.transcript.json`, `.srt`...).
 - A file a `.drp` export or a recipe still points at is never cleaned as cruft.
 - Never connect to Resolve to change anything: the only Resolve call is the

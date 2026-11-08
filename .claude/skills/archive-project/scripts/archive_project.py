@@ -32,7 +32,10 @@ carries out exactly that plan, and only with --yes (the user approved the list).
           Copy, verify every copy (size, and SHA-256 with --checksum), repoint
           recipes, write ARCHIVE-MANIFEST.json and the archive log, and only
           then delete the planned files (each re-checked: a file that changed
-          since the plan is skipped). Never deletes outside the project folder.
+          since the plan is skipped). Never deletes outside the project folder:
+          a plan whose project folder fails the dry run's guards (a drive, a home
+          folder, a folder holding your projects...) or that names a file outside
+          it is refused before anything is copied or deleted.
 
 Output: the human report on stderr, a JSON summary on stdout.
 Exit codes: 0 ok, 1 blocked (the plan lists why), 2 usage, 4 a setting is unset.
@@ -392,7 +395,8 @@ def build_refs(project: Path, files: list) -> Refs:
 
 def find_recipes(project: Path, files: list, ph: dict, explicit=None) -> list:
     """Newest version of each recipe family: JSON files named *recipe* (or with a
-    'schema'/'kind' containing 'recipe'), e.g. work/talking-head/recipe_v3.json."""
+    'schema'/'kind' containing 'recipe'), e.g. work/talking-head/recipe_v3.json, and
+    home-video's cut lists (schema home-video-cut/1: work/cut_v3.json, cut_final.json wins)."""
     if explicit:
         out = []
         for r in explicit:
@@ -413,13 +417,13 @@ def find_recipes(project: Path, files: list, ph: dict, explicit=None) -> list:
             try:
                 head = json.loads((project / rel).read_text(encoding="utf-8"))
                 tag = str(head.get("schema", "")) + str(head.get("kind", "")) if isinstance(head, dict) else ""
-                is_recipe = "recipe" in tag.lower()
+                is_recipe = "recipe" in tag.lower() or tag.lower().startswith("home-video-cut/")
             except (OSError, ValueError, UnicodeDecodeError):
                 pass
         if not is_recipe:
             continue
-        m = re.match(r"^(.*?)[_.-]?v(\d+)\.json$", rel, re.I)
-        fam, n = (m.group(1), int(m.group(2))) if m else (rel, 0)
+        m = re.match(r"^(.*?)[_.-]?(?:v(\d+)|final)\.json$", rel, re.I)
+        fam, n = (m.group(1), int(m.group(2)) if m.group(2) else float("inf")) if m else (rel, 0)
         if fam not in fams or n > fams[fam][0]:
             fams[fam] = (n, rel)
     return sorted(v[1] for v in fams.values())
@@ -479,6 +483,39 @@ def check_destination(dest: Path, role: str, need_bytes: int, blockers: list, wa
 
 # ---- the plan ---------------------------------------------------------------
 
+HOME_FOLDERS = {"desktop", "documents", "downloads", "movies", "music", "pictures", "videos", "public", "library"}
+SETTINGS_ROOTS = ("paths.projects_dir", "paths.inbox_dir", "paths.archive_dir", "paths.finals_dir",
+                  "paths.broll_library_dir", "paths.home_videos_dir", "paths.music_dir")
+
+
+def _same(a: Path, b: Path) -> bool:
+    try:
+        return os.path.samefile(a, b)
+    except OSError:
+        return os.path.normcase(os.path.abspath(a)) == os.path.normcase(os.path.abspath(b))
+
+
+def project_guard(p: Path):
+    """Why the (resolved) folder `p` must never be treated as one project folder, or None.
+    Archiving deletes the folder it is given, so a drive, the home folder, a standard
+    home folder or a folder holding the projects / archive / library is refused."""
+    home = Path.home().resolve()
+    if p == Path(p.anchor) or len(p.parts) < 3:
+        return "it is a drive or a top-level folder"
+    if _same(p, home) or _same(p, home.parent) or _same(p.parent, home.parent):
+        return "it is a home folder"
+    if _same(p.parent, home) and p.name.lower() in HOME_FOLDERS:
+        return f"it is your {p.name} folder"
+    if (str(p.parent) in MOUNT_PARENTS or str(p.parent.parent) in ("/media", "/run/media")
+            or os.path.ismount(str(p))):
+        return "it is a whole drive (a mount point)"
+    for key in SETTINGS_ROOTS:
+        r = settings.get_path(key)
+        if r and is_under(r.resolve(), p):
+            return f"it is or holds your {key} folder ({r})"
+    return None
+
+
 def resolve_project(arg: str) -> Path:
     p = settings.project_dir(arg)
     if not p.is_dir():
@@ -486,13 +523,9 @@ def resolve_project(arg: str) -> Path:
     if p.is_symlink():
         sys.exit(f"{p} is a symbolic link: pass the real folder")
     p = p.resolve()
-    home = Path.home().resolve()
-    projects_root = settings.get_path("paths.projects_dir")
-    bad = {Path(p.anchor), home, home.parent}
-    if projects_root:
-        bad.add(projects_root.resolve())
-    if p in bad or len(p.parts) < 3:
-        sys.exit(f"refusing to treat {p} as a project folder (too high up)")
+    why = project_guard(p)
+    if why:
+        sys.exit(f"refusing to treat {p} as a project folder: {why}. Pass the one project's own folder.")
     return p
 
 
@@ -1000,9 +1033,10 @@ def playable(path: Path):
 # ---- execute -------------------------------------------------------------------
 
 def copy_verified(src: Path, dst: Path, checksum: bool) -> str:
-    """Copy to <dst>.part, verify, rename. Returns 'copied' or 'already'; raises on failure."""
+    """Copy to <dst>.part, verify, rename. Returns 'copied' or 'already'; raises on failure.
+    A file already at dst counts as this one only when its SHA-256 matches (same size is not enough)."""
     if dst.exists():
-        if dst.stat().st_size == src.stat().st_size and (not checksum or sha256(src) == sha256(dst)):
+        if dst.stat().st_size == src.stat().st_size and sha256(src) == sha256(dst):
             return "already"
         raise RuntimeError(f"a different file is already at {dst}")
     dst.parent.mkdir(parents=True, exist_ok=True)
@@ -1107,6 +1141,42 @@ def prune_empty_dirs(root: Path):
             pass
 
 
+def plan_problems(plan: dict, project: Path) -> list:
+    """Why a plan must not run: the same project-folder guards as the dry run, and every
+    delete inside that folder, every copy / repoint inside its destinations. A plan that was
+    edited by hand or has gone stale fails here before anything is copied or deleted."""
+    probs = []
+    if project.is_symlink():
+        probs.append(f"{project} is a symbolic link")
+    real = project.resolve()
+    if str(real) != plan["project"]:
+        probs.append(f"the plan's project {plan['project']} is not that folder's real path ({real})")
+    why = project_guard(real)
+    if why:
+        probs.append(f"refusing to treat {real} as a project folder: {why}")
+    if plan.get("project_name") != real.name:
+        probs.append(f"the plan's project_name {plan.get('project_name')!r} is not the folder's name {real.name!r}")
+    outside = [d["path"] for d in plan["deletes"]
+               if Path(d["path"]) == real or not is_under(Path(d["path"]), real)
+               or not real_under(Path(d["path"]), real)
+               or os.path.normpath(str(real / d.get("rel", ""))) != os.path.normpath(d["path"])]
+    if outside:
+        probs.append(f"{len(outside)} planned deletes are not inside {real}: " + ", ".join(outside[:5]))
+    dest = plan.get("dest") or {}
+    roots = [Path(x) for x in (dest.get("finals"), dest.get("archive")) if x]
+    for r in roots:
+        if is_under(r, real):
+            probs.append(f"the destination {r} is inside the project folder")
+    stray = [c["dst"] for c in plan["copies"] if not any(is_under(Path(c["dst"]), r) for r in roots)]
+    stray += [x for rp in plan.get("repoint", []) for x in (rp["file"], rp.get("also_to")) if x
+              and not any(is_under(Path(x), r) for r in roots)]
+    if stray:
+        probs.append(f"{len(stray)} planned copies are not inside the plan's destinations: " + ", ".join(stray[:5]))
+    if dest.get("log") and Path(dest["log"]).name != "archive-log.jsonl":
+        probs.append(f"the archive log {dest['log']} is not an archive-log.jsonl")
+    return probs
+
+
 def cmd_execute(a, rules):
     plan_file = Path(a.plan).expanduser()
     plan = json.loads(plan_file.read_text(encoding="utf-8"))
@@ -1124,6 +1194,13 @@ def cmd_execute(a, rules):
         return 2
     if not project.is_dir():
         sys.exit(f"the project folder is gone: {project}")
+    probs = plan_problems(plan, project)
+    if probs:
+        log("REFUSED - this plan cannot run safely, nothing was copied or deleted:")
+        for p_ in probs:
+            log(f"  - {p_}")
+        log("Make a new plan with a dry run (archive / clean) and never edit a plan by hand.")
+        return 1
     checksum = bool(a.checksum or plan.get("checksum"))
     action = plan["action"]
     # destinations still there? (a NAS can drop between the dry run and now)
@@ -1173,8 +1250,12 @@ def cmd_execute(a, rules):
                 if n:
                     result["repointed"][str(f)] = n
                 if r.get("also_to"):
-                    Path(r["also_to"]).parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copy2(f, r["also_to"])
+                    to = Path(r["also_to"])
+                    to.parent.mkdir(parents=True, exist_ok=True)
+                    if to.exists():              # never overwrite: an earlier archive's recipe stays
+                        to = to.with_name(f"{to.stem}.{stamp()}{to.suffix}")
+                        log(f"  a recipe is already at {r['also_to']}; this one is saved beside it as {to.name}")
+                    shutil.copy2(f, to)
         if result["repointed"]:
             log(f"Repointed {sum(result['repointed'].values())} paths in {len(result['repointed'])} JSON files")
 

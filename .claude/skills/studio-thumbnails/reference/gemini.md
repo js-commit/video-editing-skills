@@ -51,19 +51,20 @@ concept and says "same rules". Template for the first:
 
 - **Text** is the speaker's verdict cut to 1-3 words, the same rule as the real-footage
   concepts. Never claim what the video doesn't say.
-- **Concepts that work:** both products side by side, labelled, the new one glowing, the
-  speaker pointing at it ("1.5x"); the speaker frustrated, the old product on the desk, a
-  red graph behind them ("ISN'T ENOUGH"); the speaker holding the product at chest height
-  ("FASTER"); the speaker leaning back relieved, product in the foreground ("FIXED IT").
+- **Concepts that work** (for a made-up backpack review): the old and new backpack side by
+  side, labelled, the new one glowing, the speaker pointing at it ("2X THE SPACE"); the
+  speaker frustrated, the old bag's split zip in the foreground, rain on the window behind
+  ("SOAKED AGAIN"); the speaker wearing the new one, thumbs up ("ALL DAY"); the speaker
+  leaning back relieved, the packed bag in front ("FINALLY FITS").
 
 ## 4. The wrong-product trap
 
-Gemini drifts to the older, more photographed design of a product (a redesigned desktop
-computer comes out as its wide flat predecessor; a round watch as the squircle one). Users
-reject that on sight.
+Gemini drifts to the older, more photographed design of a product (a redesigned backpack
+comes out as last year's model with its two side pockets; a roll-top as the zip-top one).
+Users reject that on sight.
 
 - Spell out the geometry: size, height as a share of the width, what the front carries,
-  and name the wrong model ("NOT the old wide flat one").
+  and name the wrong model ("NOT the old one with two side pockets").
 - **An edit doesn't fix it.** "Redo it with the new one" keeps the composition, and with
   it the wrong product. Start a fresh image ("Brand new image, start over"), with the
   product large and close to the camera. Point at an earlier result that got it right.

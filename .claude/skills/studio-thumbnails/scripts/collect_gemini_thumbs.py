@@ -12,7 +12,7 @@ when vertical, and re-encodes under 2 MB; append-only, INDEX.txt line each),
 then moves each full-size original into --work as gemini-N-<concept>-full.jpeg.
 
   collect_gemini_thumbs.py --since 1793247240 --dest <release dir> \\
-      --work <project>/<work>/thumbnails/<round>/gemini --concepts "SIDE BY SIDE" "FIXED IT"
+      --work <project>/<work>/thumbnails/<round>/gemini --concepts "SIDE BY SIDE" "FINALLY FITS"
 """
 from __future__ import annotations
 

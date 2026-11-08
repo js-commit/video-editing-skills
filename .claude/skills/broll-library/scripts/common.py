@@ -5,7 +5,8 @@ one-writer lock, the catalog file, contact sheets and clip extraction.
 Library layout (root = settings paths.broll_library_dir):
 
     <library>/
-      clips/<source>/<source>_<n>.mp4   clips cut out of finished projects / salvage
+      clips/<source>/<source>_<camera file>_<in-point>s.mp4
+                                        clips cut out of finished projects / salvage
       footage/<name>/...                raw b-roll folders moved in whole (indexed in place)
       catalog/catalog.json              every clip: path, range, description, tags...
       catalog/sheets/<clip id>.jpg      one contact sheet per clip
@@ -68,7 +69,7 @@ def library_root(required: bool = True, create: bool = False) -> Path | None:
     """The library folder. Unset -> SettingMissing when required (exit 4), else
     None. Set but unreachable -> LibraryUnavailable with what to do."""
     raw = settings.get("paths.broll_library_dir", required=required,
-                       hint="a folder for your b-roll library, e.g. ~/Videos/B-roll Library")
+                       hint="a folder for your b-roll library, e.g. ~/Movies/B-roll Library on a Mac")
     if not raw or not str(raw).strip():
         if required:
             raise settings.SettingMissing("paths.broll_library_dir", "a folder for your b-roll library")
@@ -118,6 +119,15 @@ def to_stored(root: Path, path) -> str:
 def to_abs(root: Path, stored: str) -> Path:
     p = Path(stored)
     return p if p.is_absolute() else root / p
+
+
+def free_path(p: Path) -> Path:
+    """p, or p with -2, -3 ... before the extension when a file is already there: a move
+    into _trash/ never replaces an earlier trashed clip."""
+    q, n = p, 2
+    while q.exists():
+        q, n = p.with_name(f"{p.stem}-{n}{p.suffix}"), n + 1
+    return q
 
 
 # ---- one writer at a time --------------------------------------------------

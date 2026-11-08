@@ -55,7 +55,7 @@ def _drop(root, ids, reason):
         for c in [c for c in data["clips"] if c["id"] in ids]:
             f = C.to_abs(root, c["path"])
             if not c["in_place"] and f.exists():
-                dst = root / "_trash" / f.name
+                dst = C.free_path(root / "_trash" / f.name)
                 dst.parent.mkdir(parents=True, exist_ok=True)
                 shutil.move(str(f), str(dst))
                 c["trashed_to"] = C.to_stored(root, dst)

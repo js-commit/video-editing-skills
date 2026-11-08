@@ -26,8 +26,9 @@ stdout, progress on stderr.
    the user's preferences override this skill.
 2. The library folder is settings `paths.broll_library_dir`. If a script exits
    with code 4 it is unset: ask the user where the library should live (suggest
-   a folder on their biggest drive, e.g. `~/Videos/B-roll Library`, or a NAS
-   share if they have one), save it with
+   a folder on their biggest drive, e.g. `~/Movies/B-roll Library` on a Mac or
+   `~/Videos/B-roll Library` on Windows / Linux, or a NAS share if they have
+   one), save it with
    `python3 "${CLAUDE_SKILL_DIR}/../../../tools/vidkit/settings.py" set paths.broll_library_dir "<folder>"`,
    and re-run. The folder is created on the first harvest.
 3. A NAS is optional (`nas.enabled`). If the scripts say the library is not

@@ -106,7 +106,7 @@ def cmd_prune(a):
                 if not c["in_place"]:
                     f = C.to_abs(root, c["path"])
                     if f.exists():
-                        dst = trash / f.relative_to(root) if str(f).startswith(str(root)) else trash / f.name
+                        dst = C.free_path(trash / f.relative_to(root) if str(f).startswith(str(root)) else trash / f.name)
                         dst.parent.mkdir(parents=True, exist_ok=True)
                         shutil.move(str(f), str(dst))
                         c["trashed_to"] = C.to_stored(root, dst)

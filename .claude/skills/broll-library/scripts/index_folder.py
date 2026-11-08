@@ -87,9 +87,17 @@ def main():
         files.append(p)
 
     root = None if a.dry_run else C.root_or_exit(create=True)
+    look = root
+    if a.dry_run:                         # the preview reads the catalog too, without creating anything
+        try:
+            look = C.library_root(required=False)
+        except C.LibraryUnavailable:
+            look = None
     known = set()
-    if root and not a.force:
-        known = {str(C.to_abs(root, c["source_file"])) for c in C.load_catalog(root)["clips"]}
+    cat = look / "catalog" / "catalog.json" if look else None
+    if cat and cat.is_file() and not a.force:
+        known = {str(C.to_abs(look, c["source_file"]))
+                 for c in json.loads(cat.read_text(encoding="utf-8")).get("clips", [])}
 
     plan = []
     for f in files:

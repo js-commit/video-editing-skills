@@ -6,6 +6,8 @@ talking-head take and get a clean first cut in minutes. Then let it lay b-roll,
 apply your review notes, cut Shorts, make thumbnails, write titles and chapters,
 and archive the project when you are done.
 
+**See what it does: [js-commit.github.io/video-editing-skills](https://js-commit.github.io/video-editing-skills/)**
+
 It is a starting point, not a product: every skill is a plain text file you (or
 Claude) can change. It learns your taste as you work.
 
@@ -151,6 +153,7 @@ tools/            shared helpers: settings, ffmpeg, DaVinci Resolve, transcripti
 apps/edit-review/ EditReview, a macOS app for hands-free review notes (signed copy in prebuilt/)
 apps/bulk-cut/    BulkCut, a macOS app for triaging footage from the keyboard (signed copy in prebuilt/)
 docs/             getting started, settings, shortcuts, NAS, transcription, conventions
+site/             the project page (build.py fills in the skill list; published by .github/workflows/pages.yml)
 user/             your settings and preferences (not committed)
 ```
 

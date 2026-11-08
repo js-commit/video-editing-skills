@@ -3,15 +3,28 @@
 # it with Apple and put it in place. Users never run this; contributors don't need it either
 # (each program's own build script makes an ad-hoc copy for their Mac).
 #
-#   SIGN_IDENTITY="Developer ID Application: ..." \
-#   NOTARY_TOOL_APPLE_ID=... NOTARY_TOOL_PASSWORD=... NOTARY_TOOL_TEAM_ID=... \
+#   SIGN_IDENTITY="Developer ID Application: ..." NOTARY_PROFILE=<profile> \
 #     tools/release/sign_release.sh
+#
+# NOTARY_PROFILE names a notarytool keychain profile, stored once with
+#   xcrun notarytool store-credentials <profile> --apple-id ... --team-id ...
+# so the app-specific password stays in the keychain. Without it the script falls back to
+# NOTARY_TOOL_APPLE_ID, NOTARY_TOOL_PASSWORD and NOTARY_TOOL_TEAM_ID (the password is then on
+# notarytool's command line while it runs).
 #
 # Then check `git status` and commit the binaries. Stops if a program holds a build-machine path.
 # The work folder is left in the system temp folder (public binaries only); macOS clears it.
 set -euo pipefail
 : ${SIGN_IDENTITY:?set SIGN_IDENTITY to your Developer ID Application identity}
-: ${NOTARY_TOOL_APPLE_ID:?} ${NOTARY_TOOL_PASSWORD:?} ${NOTARY_TOOL_TEAM_ID:?}
+if [[ -n ${NOTARY_PROFILE:-} ]]; then
+  NOTARY_AUTH=(--keychain-profile "$NOTARY_PROFILE")
+else
+  if [[ -z ${NOTARY_TOOL_APPLE_ID:-} || -z ${NOTARY_TOOL_PASSWORD:-} || -z ${NOTARY_TOOL_TEAM_ID:-} ]]; then
+    print -u2 -r -- "set NOTARY_PROFILE (a notarytool keychain profile), or all of NOTARY_TOOL_APPLE_ID, NOTARY_TOOL_PASSWORD and NOTARY_TOOL_TEAM_ID"
+    exit 1
+  fi
+  NOTARY_AUTH=(--apple-id "$NOTARY_TOOL_APPLE_ID" --password "$NOTARY_TOOL_PASSWORD" --team-id "$NOTARY_TOOL_TEAM_ID")
+fi
 REPO=${0:A:h:h:h}
 WORK=$(mktemp -d)
 CLEARLAB=$REPO/.claude/skills/voice-clear/scripts/bin/clearlab
@@ -22,8 +35,7 @@ sign() { codesign --force --options runtime --timestamp --sign "$SIGN_IDENTITY" 
 
 notarize() {   # notarize <zip>: notarytool's exit code is unreliable, so read the status
   local out sub_status
-  out=$(xcrun notarytool submit "$1" --apple-id "$NOTARY_TOOL_APPLE_ID" --password "$NOTARY_TOOL_PASSWORD" \
-        --team-id "$NOTARY_TOOL_TEAM_ID" --wait --output-format json)
+  out=$(xcrun notarytool submit "$1" "${NOTARY_AUTH[@]}" --wait --output-format json)
   sub_status=$(print -r -- "$out" | python3 -c 'import json,sys;print(json.load(sys.stdin).get("status"))')
   print -r -- "notarized ${1:t}: $sub_status"
   [[ $sub_status == Accepted ]] || { print -r -- "$out" >&2; exit 1; }

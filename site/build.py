@@ -9,7 +9,7 @@ Every folder in .claude/skills/ with a SKILL.md becomes a card, so the page list
 `/skills` lists. site/cards.json gives a card its group, a one-line summary, a "just say" example and
 an optional badge; a skill missing from it still shows up, under "More", with the first sentence of
 its own description. Generated parts of index.html sit between <!-- gen:NAME --> and
-<!-- /gen:NAME --> markers: skills, terminal, n-skills, n-agents.
+<!-- /gen:NAME --> markers: skills, n-skills.
 """
 from __future__ import annotations
 
@@ -23,7 +23,6 @@ from pathlib import Path
 SITE = Path(__file__).resolve().parent
 REPO = SITE.parent
 SKILLS = REPO / ".claude" / "skills"
-AGENTS = REPO / ".claude" / "agents"
 PAGE = SITE / "index.html"
 SHIP = ("index.html", "favicon.svg", "og.png", "img")   # what --out publishes
 
@@ -102,24 +101,10 @@ def render_cards(found: list, data: dict) -> str:
     return "\n".join(parts)
 
 
-def render_terminal(found: list, data: dict) -> str:
-    width = max(len(s["name"]) for s in found)
-    rows = []
-    for s in found:
-        c = data["cards"].get(s["name"], {})
-        blurb = c.get("line") or first_sentence(s["description"])
-        blurb = blurb if len(blurb) <= 58 else blurb[:57].rsplit(" ", 1)[0] + "…"
-        rows.append(f'<span class="t-row"><b>/{esc(s["name"])}</b>{" " * (width - len(s["name"]) + 2)}'
-                    f'<i>{esc(blurb)}</i></span>')
-    return "\n".join(rows)
-
-
 def build(page: str) -> str:
     found = skills()
     data = json.loads((SITE / "cards.json").read_text(encoding="utf-8"))
-    n_agents = len([p for p in AGENTS.glob("*.md")]) if AGENTS.is_dir() else 0
-    gen = {"skills": render_cards(found, data), "terminal": render_terminal(found, data),
-           "n-skills": str(len(found)), "n-agents": str(n_agents)}
+    gen = {"skills": render_cards(found, data), "n-skills": str(len(found))}
     for key, body in gen.items():
         pat = re.compile(r"(<!-- gen:%s -->)(.*?)(<!-- /gen:%s -->)" % (re.escape(key), re.escape(key)), re.S)
         if not pat.search(page):

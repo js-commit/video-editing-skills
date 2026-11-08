@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Video Editing Skills for Claude Code</title>
-<meta name="description" content="Free, open-source Claude Code skills that turn a raw talking-head take into a clean first cut, then lay b-roll, apply your notes, cut Shorts and get the video ready for YouTube, with ffmpeg and DaVinci Resolve.">
+<meta name="description" content="Turn a raw recording of yourself talking, or a folder of trip clips, into a finished video, just by asking. Free, open-source skills for Claude Code.">
 <meta name="theme-color" content="#08080a">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://js-commit.github.io/video-editing-skills/">
 <meta property="og:title" content="Video Editing Skills: you talk, Claude cuts">
-<meta property="og:description" content="Claude Code skills that cut your raw take, lay the b-roll, apply your notes and get it ready for YouTube. Free and open source.">
+<meta property="og:description" content="Turn a raw recording of yourself talking, or a folder of trip clips, into a finished video, just by asking. Free and open source.">
 <meta property="og:image" content="https://js-commit.github.io/video-editing-skills/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -29,7 +29,7 @@
     --orange: #ff7a1a;
     --cut: #ff4d4d;
     --keep: #34d399;
-    --max: 1180px;
+    --max: 1120px;
     --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   }
   * { box-sizing: border-box; }
@@ -40,35 +40,30 @@
     -webkit-font-smoothing: antialiased; overflow-x: hidden;
   }
   a { color: inherit; text-decoration: none; }
-  p a, li a, dd a, .fine a { color: var(--amber); }
-  p a:hover, li a:hover, dd a:hover { text-decoration: underline; }
+  p a, dd a, .fine a, .note a { color: var(--amber); }
+  p a:hover, .note a:hover { text-decoration: underline; }
   code { font-family: var(--mono); font-size: .88em; }
   .wrap { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
   h1, h2, h3 { font-family: "Inter Tight", Inter, sans-serif; letter-spacing: -0.035em; line-height: 1.04; margin: 0; }
-  h2 { font-size: clamp(2rem, 4.6vw, 3.4rem); font-weight: 800; }
+  h2 { font-size: clamp(2rem, 4.6vw, 3.2rem); font-weight: 800; }
   h3 { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.02em; }
   .grad {
     background: linear-gradient(100deg, #ffd166 0%, var(--amber) 35%, var(--orange) 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
-  section { padding: 110px 0; }
+  section { padding: 96px 0; }
   .kicker { font: 600 .82rem/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--amber); margin-bottom: 16px; }
-  .sub { color: var(--muted); font-size: 1.12rem; max-width: 40rem; margin: 18px 0 0; }
+  .sub { color: var(--muted); font-size: 1.12rem; max-width: 38rem; margin: 16px auto 0; }
   .center { text-align: center; }
-  .center .sub { margin-left: auto; margin-right: auto; }
 
-  /* Buttons */
   .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-    padding: 16px 26px; border-radius: 999px; font-weight: 600; font-size: 1.02rem; line-height: 1;
-    transition: transform .15s ease, box-shadow .15s ease, background .15s ease; border: 0; cursor: pointer;
+    padding: 10px 18px; border-radius: 999px; font-weight: 600; font-size: .92rem; line-height: 1;
+    color: var(--text); background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px var(--line);
+    transition: background .15s ease;
   }
-  .btn svg { width: 19px; height: 19px; flex: none; }
-  .btn:hover { transform: translateY(-1px); }
-  .btn-primary { background: var(--amber); color: #140d00; box-shadow: 0 10px 40px -10px rgba(255,179,0,.6); }
-  .btn-primary:hover { background: #ffc233; box-shadow: 0 14px 50px -10px rgba(255,179,0,.75); }
-  .btn-ghost { color: var(--text); background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px var(--line); }
-  .btn-ghost:hover { background: rgba(255,255,255,.1); }
+  .btn:hover { background: rgba(255,255,255,.1); }
+  .btn svg { width: 18px; height: 18px; flex: none; }
 
   /* Nav */
   header {
@@ -81,51 +76,57 @@
   .brand img { width: 28px; height: 28px; border-radius: 7px; }
   .nav-links { display: flex; align-items: center; gap: 26px; font-size: .94rem; color: var(--muted); }
   .nav-links a:hover { color: var(--text); }
-  .nav .btn { padding: 10px 18px; font-size: .92rem; color: var(--text); }
   @media (max-width: 760px) { .nav-links .hide-sm { display: none; } }
 
   /* Hero */
-  .hero { position: relative; padding: 70px 0 30px; text-align: center; overflow: hidden; }
+  .hero { position: relative; padding: 64px 0 24px; text-align: center; overflow: hidden; }
   .hero::before {
     content: ""; position: absolute; inset: 0; pointer-events: none;
     background:
-      radial-gradient(55% 40% at 50% 78%, rgba(255,150,0,.20), transparent 70%),
+      radial-gradient(55% 40% at 50% 70%, rgba(255,150,0,.18), transparent 70%),
       radial-gradient(40% 30% at 50% 0%, rgba(255,255,255,.06), transparent 70%);
   }
-  .pill {
-    display: inline-flex; align-items: center; gap: 9px; padding: 7px 14px 7px 12px; border-radius: 999px;
-    font-size: .88rem; font-weight: 500; color: #e4e4e7; background: rgba(255,255,255,.05);
-    box-shadow: inset 0 0 0 1px var(--line);
-  }
-  .pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--keep); box-shadow: 0 0 0 4px rgba(52,211,153,.18); }
-  .hero h1 { font-size: clamp(2.9rem, 8vw, 6rem); font-weight: 800; margin: 24px auto 0; max-width: 11ch; }
-  .lede { font-size: clamp(1.08rem, 1.9vw, 1.3rem); color: var(--muted); max-width: 40rem; margin: 22px auto 0; }
-  .cta { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 32px; }
-  .fine { font-size: .9rem; color: var(--muted); margin-top: 16px; }
+  .hero h1 { font-size: clamp(2.9rem, 8vw, 5.8rem); font-weight: 800; margin: 0 auto; max-width: 11ch; }
+  .lede { font-size: clamp(1.08rem, 1.9vw, 1.28rem); color: var(--muted); max-width: 34rem; margin: 20px auto 0; }
+
+  /* The two commands */
+  .run { max-width: 820px; margin: 36px auto 0; text-align: left; }
+  .run .need { font-size: .92rem; color: var(--muted); margin: 0 0 10px 4px; }
+  .run .need a { color: var(--amber); }
+  .term { background: #0b0b0d; border-radius: 14px; box-shadow: 0 0 0 1px rgba(255,255,255,.1), 0 30px 70px -30px rgba(0,0,0,.9), 0 0 80px -30px rgba(255,150,0,.35); overflow: hidden; }
+  .term .bar { height: 36px; display: flex; align-items: center; gap: 7px; padding: 0 14px; background: #161619; border-bottom: 1px solid var(--line); }
+  .bar i { width: 11px; height: 11px; border-radius: 50%; flex: none; }
+  .bar i:nth-child(1) { background: #ff5f57; } .bar i:nth-child(2) { background: #febc2e; } .bar i:nth-child(3) { background: #28c840; }
+  .bar span { margin-left: 8px; font: 500 .78rem/1 var(--mono); color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cmd { display: grid; grid-template-columns: 28px 1fr auto; gap: 4px 12px; align-items: start; padding: 16px 16px 4px; }
+  .cmd + .cmd { border-top: 1px solid var(--line); padding-top: 14px; }
+  .cmd:last-of-type { padding-bottom: 16px; }
+  .cmd .n { width: 24px; height: 24px; border-radius: 50%; background: var(--amber); color: #140d00; font: 800 .8rem/24px "Inter Tight", sans-serif; text-align: center; margin-top: 1px; }
+  .cmd .label { font-size: .86rem; color: var(--muted); grid-column: 2; }
+  .cmd pre { grid-column: 2; margin: 0; font: .9rem/1.6 var(--mono); color: var(--text); white-space: pre-wrap; word-break: break-word; }
+  .cmd pre::before { content: "$ "; color: var(--amber); }
+  .cmd pre b { color: var(--keep); font-weight: 400; }
+  .copy { grid-column: 3; grid-row: 1 / span 2; align-self: center; font: 600 .74rem/1 var(--mono); color: var(--muted); background: rgba(255,255,255,.07); border: 0; border-radius: 7px; padding: 8px 10px; cursor: pointer; }
+  .copy:hover { color: var(--text); }
+  .run .fine { font-size: .88rem; color: var(--dim); margin: 12px 0 0 4px; }
 
   /* The haircut demo */
-  .demo { position: relative; max-width: 900px; margin: 56px auto 0; text-align: left; }
-  .win {
-    background: var(--panel); border-radius: 16px; overflow: hidden;
-    box-shadow: 0 0 0 1px rgba(255,255,255,.09), 0 50px 100px -30px rgba(0,0,0,.9), 0 0 120px -40px rgba(255,150,0,.35);
-  }
-  .bar { height: 42px; display: flex; align-items: center; gap: 8px; padding: 0 16px; background: #1a1a1e; border-bottom: 1px solid var(--line); }
-  .bar i { width: 12px; height: 12px; border-radius: 50%; flex: none; }
-  .bar i:nth-child(1) { background: #ff5f57; } .bar i:nth-child(2) { background: #febc2e; } .bar i:nth-child(3) { background: #28c840; }
-  .bar span { margin-left: 10px; font: 500 .82rem/1 var(--mono); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .script { padding: 22px 26px 8px; font-size: clamp(.92rem, 1.6vw, 1.04rem); line-height: 1.65; min-height: 200px; }
-  .ln { position: relative; display: block; overflow: hidden; max-height: 10em; transition: max-height .6s ease, opacity .6s ease, margin .6s ease; }
-  .ln .w { display: inline-block; white-space: pre; transition: color .25s ease, opacity .5s ease, max-width .6s ease, font-size .6s ease; max-width: 14em; vertical-align: bottom; }
+  .demo { position: relative; max-width: 820px; margin: 56px auto 0; text-align: left; }
+  .win { background: var(--panel); border-radius: 16px; overflow: hidden; box-shadow: 0 0 0 1px rgba(255,255,255,.09), 0 50px 100px -30px rgba(0,0,0,.9); }
+  .win .bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 16px; background: #1a1a1e; border-bottom: 1px solid var(--line); }
+  .script { padding: 20px 24px 6px; font-size: clamp(.92rem, 1.6vw, 1.02rem); line-height: 1.65; }
+  .ln { position: relative; display: block; overflow: hidden; max-height: 10em; transition: max-height .6s ease, opacity .6s ease; }
+  .ln .w { display: inline-block; white-space: pre; transition: color .25s ease, opacity .5s ease, max-width .6s ease; max-width: 14em; vertical-align: bottom; }
   .ln .w.cut.marked { color: var(--cut); text-decoration: line-through; text-decoration-thickness: 2px; }
   .collapse .ln .w.cut { max-width: 0; opacity: 0; }
   .collapse .ln.all-cut { max-height: 0; opacity: 0; }
   .ln.scan::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(52,211,153,.14), transparent); }
-  .tl { margin: 10px 26px 0; height: 30px; display: flex; gap: 2px; border-radius: 6px; overflow: hidden; }
+  .tl { margin: 10px 24px 0; height: 26px; display: flex; gap: 2px; border-radius: 6px; overflow: hidden; }
   .seg { flex-basis: 0; background: #2f6f5c; transition: flex-grow .7s ease, background .3s ease, margin .7s ease; min-width: 0; }
   .seg.gap { background: #26262b; }
   .seg.cut.marked { background: var(--cut); }
   .collapse .seg.cut { flex-grow: 0 !important; margin-left: -2px; }
-  .status { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 26px 18px; font: 500 .85rem/1.3 var(--mono); color: var(--muted); }
+  .status { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 24px 16px; font: 500 .84rem/1.3 var(--mono); color: var(--muted); }
   .status .what { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .status .what b { width: 9px; height: 9px; border-radius: 50%; background: var(--amber); flex: none; animation: pulse 1.2s ease-in-out infinite; }
   .status.done .what b { background: var(--keep); animation: none; }
@@ -133,62 +134,49 @@
   .status .clock s { color: var(--dim); text-decoration-thickness: 1px; margin-right: 6px; }
   .replay { font: 600 .82rem/1 var(--mono); color: var(--amber); background: none; border: 0; cursor: pointer; padding: 0; visibility: hidden; }
   .status.done .replay { visibility: visible; }
-  .demo-note { text-align: center; font-size: .86rem; color: var(--dim); margin-top: 14px; }
+  .note { text-align: center; font-size: .98rem; color: var(--muted); max-width: 36rem; margin: 22px auto 0; font-style: italic; }
+  .note span { font-style: normal; color: var(--dim); font-size: .88rem; }
   @keyframes pulse { 50% { opacity: .35; } }
 
-  /* Why */
-  .why { display: grid; grid-template-columns: 1fr 1.25fr; gap: 64px; align-items: start; }
-  .why .story p { font-size: 1.12rem; color: #d4d4d8; margin: 0 0 18px; }
-  .why .story p:first-child::first-letter { font: 800 3.2rem/0.9 "Inter Tight", sans-serif; float: left; margin: 6px 10px 0 0; color: var(--amber); }
-  .sig { color: var(--muted); font-size: .95rem; }
-  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 34px; }
-  .stat { background: var(--panel); border-radius: 14px; padding: 18px 20px; box-shadow: inset 0 0 0 1px var(--line); }
-  .stat b { display: block; font: 800 2.2rem/1 "Inter Tight", sans-serif; letter-spacing: -0.03em; }
-  .stat span { color: var(--muted); font-size: .92rem; }
-  @media (max-width: 880px) { .why { grid-template-columns: 1fr; gap: 28px; } }
+  /* Just ask */
+  .asks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 40px; text-align: left; }
+  .ask { background: var(--panel); border-radius: 16px; padding: 22px; box-shadow: inset 0 0 0 1px var(--line); display: flex; flex-direction: column; gap: 12px; }
+  .ask .q { font: 700 1.12rem/1.3 "Inter Tight", sans-serif; letter-spacing: -0.02em; color: var(--text); }
+  .ask .q::before { content: "“"; color: var(--amber); }
+  .ask .q::after { content: "”"; color: var(--amber); }
+  .ask p { margin: 0; color: var(--muted); font-size: .95rem; line-height: 1.5; }
+  .ask .ico { font-size: 1.6rem; line-height: 1; }
+  @media (max-width: 980px) { .asks { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .asks { grid-template-columns: 1fr; } }
 
-  /* Pipeline strip */
-  .pipe { display: flex; flex-wrap: wrap; gap: 10px; margin: 34px 0 0; padding: 0; list-style: none; }
-  .pipe a {
-    display: inline-flex; align-items: center; gap: 8px; padding: 9px 15px; border-radius: 999px; font-size: .92rem; font-weight: 600;
-    background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px var(--line); transition: background .15s ease;
+  /* All skills drawer */
+  .all { margin-top: 28px; text-align: left; }
+  .all > summary {
+    list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 16px; border-radius: 14px; font-weight: 600; background: rgba(255,255,255,.04); box-shadow: inset 0 0 0 1px var(--line);
   }
-  .pipe a:hover { background: rgba(255,179,0,.14); }
-  .pipe .arrow { color: var(--dim); align-self: center; }
-
-  /* Terminal */
-  .term { margin-top: 40px; background: #0b0b0d; border-radius: 14px; overflow: hidden; box-shadow: 0 0 0 1px rgba(255,255,255,.09), 0 40px 80px -30px rgba(0,0,0,.9); }
-  .term pre { margin: 0; padding: 18px 22px 22px; font: .84rem/1.75 var(--mono); color: #d4d4d8; overflow: auto; }
-  .term .prompt { color: var(--text); }
-  .term .prompt::before { content: "> "; color: var(--amber); }
-  .term .caret { display: inline-block; width: .6em; height: 1.1em; background: var(--amber); vertical-align: -0.2em; animation: pulse 1s steps(1) infinite; }
-  .term .t-row { display: inline; }
-  .term .t-row b { color: var(--amber); font-weight: 600; }
-  .term .t-row i { font-style: normal; color: var(--muted); }
-  .term.typing .t-row { visibility: hidden; }
-  .term .t-row.on { visibility: visible; }
-
-  /* Cards */
-  .group { margin-top: 64px; scroll-margin-top: 80px; }
-  .group-head { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
-  .group-head h3 { font-size: 1.6rem; }
+  .all > summary::-webkit-details-marker { display: none; }
+  .all > summary:hover { background: rgba(255,179,0,.1); }
+  .all > summary::after { content: "+"; color: var(--amber); font-size: 1.3rem; line-height: 1; }
+  .all[open] > summary::after { content: "–"; }
+  .all > summary code { color: var(--amber); }
+  .group { margin-top: 44px; scroll-margin-top: 80px; }
+  .group-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+  .group-head h3 { font-size: 1.4rem; }
   .group-head p { margin: 0; color: var(--muted); }
-  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-top: 20px; }
-  .card {
-    display: flex; flex-direction: column; gap: 10px; background: var(--panel); border-radius: 14px; padding: 18px 20px;
-    box-shadow: inset 0 0 0 1px var(--line); transition: transform .15s ease, box-shadow .15s ease; scroll-margin-top: 80px;
-  }
-  .card:hover { transform: translateY(-2px); box-shadow: inset 0 0 0 1px rgba(255,179,0,.35); }
-  .card.star { background: linear-gradient(160deg, rgba(255,179,0,.13), var(--panel) 55%); box-shadow: inset 0 0 0 1px rgba(255,179,0,.3); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-top: 18px; }
+  .card { display: flex; flex-direction: column; gap: 8px; background: var(--panel); border-radius: 14px; padding: 16px 18px; box-shadow: inset 0 0 0 1px var(--line); scroll-margin-top: 80px; }
+  .card.star { background: linear-gradient(160deg, rgba(255,179,0,.12), var(--panel) 55%); box-shadow: inset 0 0 0 1px rgba(255,179,0,.28); }
   .card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .card-top code { font-weight: 600; font-size: .92rem; color: var(--text); }
-  .badge { font: 600 .7rem/1 var(--mono); letter-spacing: .04em; color: var(--muted); padding: 5px 8px; border-radius: 999px; background: rgba(255,255,255,.06); white-space: nowrap; }
-  .card p { margin: 0; color: #d4d4d8; font-size: .97rem; line-height: 1.55; }
-  .card .say { margin-top: auto; padding-top: 6px; font-size: .9rem; color: var(--text); }
-  .card .say span { display: block; font: 600 .68rem/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--amber); margin-bottom: 6px; }
+  .card-top code { font-weight: 600; font-size: .86rem; color: var(--muted); }
+  .badge { font: 600 .68rem/1 var(--mono); color: var(--muted); padding: 5px 8px; border-radius: 999px; background: rgba(255,255,255,.06); white-space: nowrap; }
+  .card p { margin: 0; color: #d4d4d8; font-size: .95rem; line-height: 1.5; }
+  .card .say { margin-top: auto; padding-top: 4px; font-size: .88rem; color: var(--text); }
+  .card .say span { display: none; }
 
   /* It learns */
   .learn { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+  .learn .sub { margin-left: 0; }
   .chat { display: flex; flex-direction: column; gap: 12px; }
   .bubble { max-width: 88%; padding: 13px 16px; border-radius: 18px; font-size: 1rem; line-height: 1.5; }
   .bubble.you { align-self: flex-end; background: var(--amber); color: #140d00; border-bottom-right-radius: 6px; font-weight: 500; }
@@ -197,37 +185,18 @@
   .file .fname { padding: 9px 14px; border-bottom: 1px solid var(--line); color: var(--muted); }
   .file pre { margin: 0; padding: 12px 14px; color: #a1a1aa; white-space: pre-wrap; font: inherit; }
   .file .add { display: block; color: var(--keep); background: rgba(52,211,153,.08); margin: 0 -14px; padding: 0 14px; }
-  .points { list-style: none; padding: 0; margin: 26px 0 0; display: grid; gap: 14px; }
-  .points li { padding-left: 30px; position: relative; color: #d4d4d8; }
-  .points li::before { content: ""; position: absolute; left: 0; top: .55em; width: 14px; height: 14px; border-radius: 4px; background: linear-gradient(135deg, #ffd166, var(--orange)); }
-  .points b { color: var(--text); }
   @media (max-width: 880px) { .learn { grid-template-columns: 1fr; gap: 30px; } }
 
-  /* Start */
-  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 44px; counter-reset: step; }
-  .step { background: var(--panel); border-radius: 16px; padding: 24px; box-shadow: inset 0 0 0 1px var(--line); counter-increment: step; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-  .step::before { content: counter(step); font: 800 1rem/1 "Inter Tight", sans-serif; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--amber); color: #140d00; }
-  .step p { margin: 0; color: #d4d4d8; font-size: .97rem; }
-  .code { position: relative; background: #0b0b0d; border-radius: 10px; box-shadow: inset 0 0 0 1px var(--line); }
-  .code pre { margin: 0; padding: 12px 64px 12px 14px; font: .8rem/1.6 var(--mono); color: var(--text); white-space: pre-wrap; word-break: break-all; }
-  .copy { position: absolute; top: 7px; right: 7px; font: 600 .72rem/1 var(--mono); color: var(--muted); background: rgba(255,255,255,.07); border: 0; border-radius: 6px; padding: 7px 9px; cursor: pointer; }
-  .copy:hover { color: var(--text); }
-  .then { margin-top: 26px; text-align: center; color: var(--muted); }
-  .then code { color: var(--text); background: rgba(255,255,255,.06); padding: 4px 9px; border-radius: 6px; }
-  .needs { margin: 34px auto 0; max-width: 820px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 28px; color: var(--muted); font-size: .95rem; list-style: none; padding: 0; }
-  .needs li::before { content: "→ "; color: var(--amber); }
-  @media (max-width: 880px) { .steps { grid-template-columns: 1fr; } .needs { grid-template-columns: 1fr; } }
-
   /* Privacy */
-  .trust { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 44px; }
-  .trust div { background: var(--panel); border-radius: 14px; padding: 22px; box-shadow: inset 0 0 0 1px var(--line); }
-  .trust h3 { font-size: 1.05rem; margin-bottom: 8px; }
-  .trust p { margin: 0; color: var(--muted); font-size: .93rem; line-height: 1.55; }
+  .trust { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 40px; text-align: left; }
+  .trust div { background: var(--panel); border-radius: 14px; padding: 20px; box-shadow: inset 0 0 0 1px var(--line); }
+  .trust h3 { font-size: 1.05rem; margin-bottom: 6px; }
+  .trust p { margin: 0; color: var(--muted); font-size: .93rem; line-height: 1.5; }
   @media (max-width: 980px) { .trust { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 560px) { .trust { grid-template-columns: 1fr; } }
 
   /* FAQ */
-  .faq { max-width: 820px; margin: 40px auto 0; }
+  .faq { max-width: 780px; margin: 36px auto 0; }
   .faq details { border-bottom: 1px solid var(--line); padding: 18px 0; }
   .faq summary { cursor: pointer; font-weight: 600; font-size: 1.06rem; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
   .faq summary::-webkit-details-marker { display: none; }
@@ -235,21 +204,20 @@
   .faq details[open] summary::after { content: "–"; }
   .faq details p { margin: 12px 0 0; color: var(--muted); }
 
-  /* Closing + footer */
-  .closing { text-align: center; padding: 90px 0 110px; position: relative; }
-  .closing::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(45% 55% at 50% 60%, rgba(255,150,0,.16), transparent 70%); }
   footer { border-top: 1px solid var(--line); padding: 34px 0 50px; color: var(--dim); font-size: .88rem; }
   footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 30px; justify-content: space-between; }
+  footer a { color: var(--muted); }
   footer a:hover { color: var(--text); }
   footer p { margin: 0; max-width: 46rem; }
 
   @media (max-width: 560px) {
-    section { padding: 80px 0; }
+    section { padding: 72px 0; }
     .wrap { padding: 0 16px; }
-    .script { padding: 18px 16px 6px; }
+    .cmd { grid-template-columns: 24px 1fr; }
+    .copy { grid-column: 2; grid-row: auto; justify-self: start; margin-top: 6px; }
+    .script { padding: 16px 16px 6px; }
     .tl { margin: 10px 16px 0; }
-    .status { padding: 12px 16px 16px; flex-wrap: wrap; }
-    .term pre { max-height: 440px; }
+    .status { padding: 12px 16px 14px; flex-wrap: wrap; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -263,10 +231,10 @@
   <div class="wrap nav">
     <a class="brand" href="#top"><img src="favicon.svg" alt="">Video Editing Skills</a>
     <nav class="nav-links">
-      <a class="hide-sm" href="#why">Why</a>
-      <a class="hide-sm" href="#skills">Skills</a>
-      <a class="hide-sm" href="#start">Get started</a>
-      <a class="btn btn-ghost" href="https://github.com/js-commit/video-editing-skills">
+      <a class="hide-sm" href="#ask">What it does</a>
+      <a class="hide-sm" href="#privacy">Privacy</a>
+      <a class="hide-sm" href="#faq">FAQ</a>
+      <a class="btn" href="https://github.com/js-commit/video-editing-skills">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
         GitHub
       </a>
@@ -277,18 +245,32 @@
 <main id="top">
 <section class="hero">
   <div class="wrap">
-    <span class="pill"><span class="dot"></span><!-- gen:n-skills -->27<!-- /gen:n-skills --> skills for Claude Code · free and open source</span>
     <h1>You talk.<br><span class="grad">Claude cuts.</span></h1>
-    <p class="lede">Point it at a raw talking-head take and get a clean first cut: retakes, false starts and "is this thing on?" gone. Then let it lay the b-roll, apply your notes, cut the Shorts and get the video ready for YouTube, with the ffmpeg and DaVinci Resolve already on your computer.</p>
-    <div class="cta">
-      <a class="btn btn-primary" href="#start">Get started</a>
-      <a class="btn btn-ghost" href="#skills">See all <!-- gen:n-skills -->27<!-- /gen:n-skills --> skills</a>
-    </div>
-    <p class="fine">MIT licensed · works best on a Mac · your footage stays on your computer</p>
+    <p class="lede">Turn a raw recording of yourself talking, or a folder of trip clips, into a finished video. Just ask in plain English.</p>
 
-    <div class="demo" id="demo" aria-label="Animation: an a-roll transcript where retakes and filler are struck through and removed, and the timeline gets shorter.">
+    <div class="run">
+      <p class="need">Needs <a href="https://code.claude.com/docs/en/setup">Claude Code</a>. Paste into Terminal:</p>
+      <div class="term">
+        <div class="bar"><i></i><i></i><i></i><span>Terminal</span></div>
+        <div class="cmd">
+          <span class="n">1</span>
+          <span class="label">Get it and set it up (once)</span>
+          <pre>git clone https://github.com/js-commit/video-editing-skills && cd video-editing-skills && claude <b>"set me up"</b></pre>
+          <button class="copy" type="button">Copy</button>
+        </div>
+        <div class="cmd">
+          <span class="n">2</span>
+          <span class="label">Cut your first video</span>
+          <pre>claude <b>"cut the retakes out of ~/Movies/my-take.mp4"</b></pre>
+          <button class="copy" type="button">Copy</button>
+        </div>
+      </div>
+      <p class="fine">Free and open source · your video files stay on your computer · already in Claude? Just type the part in quotes.</p>
+    </div>
+
+    <div class="demo" id="demo" aria-label="Animation: a transcript where retakes and filler are struck through and removed, and the video gets shorter.">
       <div class="win">
-        <div class="bar"><i></i><i></i><i></i><span>backpack-review-take-03.mp4 · aroll-draft</span></div>
+        <div class="bar"><i></i><i></i><i></i><span>my-take.mp4</span></div>
         <div class="script" aria-hidden="true"></div>
         <div class="tl" aria-hidden="true"></div>
         <div class="status" aria-hidden="true">
@@ -296,348 +278,245 @@
           <span><span class="clock"></span> <button class="replay" type="button">Replay ↺</button></span>
         </div>
       </div>
-      <p class="demo-note">The example from aroll-draft's own editing prompt. A real 20-minute take works the same way, chunk by chunk.</p>
+      <p class="note">"I dreaded spending an hour cutting my own retakes before the real editing even started. Now Claude cuts the mistakes, keeps every word I meant, and hands me a clean first cut."<br><span>— the maintainer, also behind <a href="https://github.com/js-commit/video-haircut">Video Haircut</a></span></p>
     </div>
   </div>
 </section>
 
-<section id="why">
-  <div class="wrap why">
-    <div>
-      <div class="kicker">Why this exists</div>
-      <h2>Cutting retakes is <span class="grad">not</span> editing.</h2>
-      <div class="stats">
-        <div class="stat"><b><!-- gen:n-skills -->27<!-- /gen:n-skills --></b><span>skills, raw take to archive</span></div>
-        <div class="stat"><b><!-- gen:n-agents -->19<!-- /gen:n-agents --></b><span>specialist agents behind them</span></div>
-        <div class="stat"><b>0</b><span>uploads you didn't do yourself</span></div>
-        <div class="stat"><b>100%</b><span>plain text you can change</span></div>
-      </div>
-    </div>
-    <div class="story">
-      <p>Every video I make starts the same way: twenty minutes of me talking to a camera, saying the good sentences two or three times until one comes out right. Turning that into ten clean minutes was the part I dreaded. It isn't creative. It's finding the take where I didn't trip over a word, again and again, for an hour.</p>
-      <p>So I handed that part to Claude. It reads the word-level transcript, cuts the retakes, the false starts and the mic checks, and a second pass reads the result back like a viewer would. Every cut is snapped to the waveform, so no word gets clipped and nothing pops. I get a timeline in DaVinci Resolve and a preview to watch.</p>
-      <p>Then I kept going: b-roll, review notes, Shorts, thumbnails, titles and chapters, even clearing the drive when a project is done. This is the toolkit I edit my own videos with, opened up. You keep the taste calls. Claude does the haircut.</p>
-      <p class="sig">— the maintainer, also behind <a href="https://github.com/js-commit/video-haircut">Video Haircut</a></p>
-    </div>
-  </div>
-</section>
-
-<section id="skills" style="padding-top: 40px;">
-  <div class="wrap">
-    <div class="kicker">What it can do</div>
-    <h2>Type <code class="grad">/skills</code>. Then just ask.</h2>
-    <p class="sub">Every skill is a plain-language recipe Claude follows, with scripts for the exact parts. You don't call them by name: say what you want and the right one picks itself up.</p>
-
-    <div class="term" id="term">
-      <pre><span class="prompt" id="prompt">/skills</span>
-<!-- gen:terminal -->
-<span class="t-row"><b>/archive-project</b>       <i>Done with a video? Keeps the finals and the good b-roll…</i></span>
-<span class="t-row"><b>/aroll-benchmark</b>       <i>For tinkerers: scores the automatic cut against your own…</i></span>
-<span class="t-row"><b>/aroll-draft</b>           <i>Raw talking-head take in, first cut out. Retakes, false…</i></span>
-<span class="t-row"><b>/broll-brick-layer</b>     <i>Looks at your b-roll, matches shots to what you&#x27;re…</i></span>
-<span class="t-row"><b>/broll-library</b>         <i>Every clip you&#x27;ve shot, described and searchable.…</i></span>
-<span class="t-row"><b>/camera-ab-compare</b>     <i>Two phones, one walk: works out which phone shot what,…</i></span>
-<span class="t-row"><b>/customize</b>             <i>Say &quot;from now on...&quot; once and it remembers. Or ask it to…</i></span>
-<span class="t-row"><b>/edit-review-notes</b>     <i>Watch the draft, type or dictate notes in EditReview as…</i></span>
-<span class="t-row"><b>/editing-coach</b>         <i>Learning to edit? J-cuts, pacing, colour in Resolve,…</i></span>
-<span class="t-row"><b>/footage-triage</b>        <i>Sorts an import dump into projects, the home-video…</i></span>
-<span class="t-row"><b>/home-video</b>            <i>A trip, pet or family montage from a pile of phone…</i></span>
-<span class="t-row"><b>/montage-music</b>         <i>Picks tracks you have the rights to, finds the beats and…</i></span>
-<span class="t-row"><b>/motion-graphics</b>       <i>Animated stats, charts, callouts and lower thirds timed…</i></span>
-<span class="t-row"><b>/multicam-angles</b>       <i>Shot with two cameras? Picks the angle for every cut,…</i></span>
-<span class="t-row"><b>/new-project</b>           <i>A new project folder in your own layout, ready for…</i></span>
-<span class="t-row"><b>/resolve-export-draft</b>  <i>A review draft of your Resolve timeline, rendered from…</i></span>
-<span class="t-row"><b>/setup</b>                 <i>About ten minutes of skippable questions, and every…</i></span>
-<span class="t-row"><b>/ship-it</b>               <i>Two words from approved draft to ready to upload:…</i></span>
-<span class="t-row"><b>/shorts</b>                <i>Finds Shorts in your finished video, word-precise with a…</i></span>
-<span class="t-row"><b>/stabilize-clips</b>       <i>Smooths shaky handheld clips, measures whether it…</i></span>
-<span class="t-row"><b>/studio-thumbnails</b>     <i>Adds AI concepts from YouTube Studio&#x27;s Ask Studio and…</i></span>
-<span class="t-row"><b>/talking-head-ffmpeg</b>   <i>The whole edit with no editing app: your cut plus b-roll…</i></span>
-<span class="t-row"><b>/unboxing-cut</b>          <i>A long overhead unboxing becomes a paced, ASMR-style…</i></span>
-<span class="t-row"><b>/vo-gapfill</b>            <i>Missing a sentence? Writes the line in your on-camera…</i></span>
-<span class="t-row"><b>/voice-clear</b>           <i>Takes the room echo and noise out of your voice, on your…</i></span>
-<span class="t-row"><b>/youtube-release</b>       <i>Title options in your style, a description with chapters…</i></span>
-<span class="t-row"><b>/youtube-thumbnails</b>    <i>Thumbnails from your real footage, with the hook lifted…</i></span>
-<!-- /gen:terminal --></pre>
+<section id="ask">
+  <div class="wrap center">
+    <div class="kicker">What it does</div>
+    <h2>Just ask.</h2>
+    <p class="sub">No buttons to learn. Say what you want, and Claude does the editing on your computer.</p>
+    <div class="asks">
+      <div class="ask"><span class="ico">✂️</span><span class="q">Cut the retakes out of this</span><p>Your stumbles, repeats and "um, wait" gone, with no words clipped.</p></div>
+      <div class="ask"><span class="ico">🏖️</span><span class="q">Make a video of our trip</span><p>A pile of phone clips becomes a movie with music. Can stay fully private.</p></div>
+      <div class="ask"><span class="ico">📱</span><span class="q">Make Shorts from this video</span><p>Your best moments, vertical and captioned.</p></div>
+      <div class="ask"><span class="ico">🚀</span><span class="q">Ship it</span><p>Title, chapters, thumbnails and the right volume, ready for you to upload.</p></div>
     </div>
 
-    <ul class="pipe" aria-label="Skill groups">
-      <li><a href="#g-cut">✂️ Cut</a></li><li class="arrow">→</li>
-      <li><a href="#g-fill">🎞️ Fill</a></li><li class="arrow">→</li>
-      <li><a href="#g-polish">✨ Polish</a></li><li class="arrow">→</li>
-      <li><a href="#g-ship">🚀 Ship</a></li>
-      <li><a href="#g-life">🏖️ Home videos</a></li>
-      <li><a href="#g-tidy">🧹 Keep it tidy</a></li>
-      <li><a href="#g-yours">🛠️ Make it yours</a></li>
-    </ul>
-
+    <details class="all">
+      <summary><span>See all <!-- gen:n-skills -->27<!-- /gen:n-skills --> skills (what <code>/skills</code> shows)</span></summary>
 <!-- gen:skills -->
 <div class="group" id="g-cut">
-  <div class="group-head"><h3>Cut</h3><p>From raw take to a clean first cut.</p></div>
+  <div class="group-head"><h3>Cut</h3><p>From raw recording to a clean first cut.</p></div>
   <div class="cards">
     <article class="card star" id="skill-aroll-draft">
       <div class="card-top"><code>aroll-draft</code></div>
-      <p>Raw talking-head take in, first cut out. Retakes, false starts, mic checks and filler gone, every cut snapped to the waveform so no word gets clipped.</p>
-      <p class="say"><span>Just say</span> &ldquo;draft this a-roll&rdquo;</p>
+      <p>Cuts the retakes, stumbles and &quot;is this thing on?&quot; out of a recording of you talking. No clipped words.</p>
+      <p class="say"><span>Just say</span> &ldquo;cut the retakes out of my-take.mp4&rdquo;</p>
     </article>
     <article class="card" id="skill-multicam-angles">
       <div class="card-top"><code>multicam-angles</code><span class="badge">Resolve Studio</span></div>
-      <p>Shot with two cameras? Picks the angle for every cut, adds a face picture-in-picture where you show things, and stops the flicker.</p>
+      <p>Filmed with two cameras? Picks the best angle for every moment.</p>
       <p class="say"><span>Just say</span> &ldquo;pick the camera angles&rdquo;</p>
     </article>
     <article class="card" id="skill-talking-head-ffmpeg">
       <div class="card-top"><code>talking-head-ffmpeg</code></div>
-      <p>The whole edit with no editing app: your cut plus b-roll as one JSON recipe that ffmpeg renders.</p>
-      <p class="say"><span>Just say</span> &ldquo;edit this with b-roll, no Resolve&rdquo;</p>
+      <p>Puts your extra clips over the talking and renders the video. No editing app needed.</p>
+      <p class="say"><span>Just say</span> &ldquo;edit this with b-roll&rdquo;</p>
     </article>
     <article class="card" id="skill-unboxing-cut">
       <div class="card-top"><code>unboxing-cut</code></div>
-      <p>A long overhead unboxing becomes a paced, ASMR-style sequence: the box, the knife, the peel, the reveal.</p>
+      <p>Turns a long unboxing into a short, satisfying sequence.</p>
       <p class="say"><span>Just say</span> &ldquo;cut the unboxing&rdquo;</p>
     </article>
   </div>
 </div>
 <div class="group" id="g-fill">
-  <div class="group-head"><h3>Fill</h3><p>B-roll, graphics and the lines you forgot to say.</p></div>
+  <div class="group-head"><h3>Fill</h3><p>Extra clips, graphics, the line you forgot.</p></div>
   <div class="cards">
     <article class="card" id="skill-broll-brick-layer">
       <div class="card-top"><code>broll-brick-layer</code><span class="badge">Resolve Studio</span></div>
-      <p>Looks at your b-roll, matches shots to what you&#x27;re saying, lays them on the timeline, then a second agent tries to veto every one.</p>
+      <p>Covers the talking with matching clips on your DaVinci Resolve timeline, then double-checks every pick.</p>
       <p class="say"><span>Just say</span> &ldquo;lay b-roll on this timeline&rdquo;</p>
     </article>
     <article class="card" id="skill-broll-library">
       <div class="card-top"><code>broll-library</code></div>
-      <p>Every clip you&#x27;ve shot, described and searchable. Harvest the b-roll from finished edits and find it again next year.</p>
+      <p>Every clip you&#x27;ve ever shot, described and searchable.</p>
       <p class="say"><span>Just say</span> &ldquo;have I ever shot a rainy street?&rdquo;</p>
     </article>
     <article class="card" id="skill-motion-graphics">
       <div class="card-top"><code>motion-graphics</code></div>
-      <p>Animated stats, charts, callouts and lower thirds timed to your words, in your colours, rendered with the browser you already have.</p>
+      <p>Animated numbers, charts and labels that pop up as you say them.</p>
       <p class="say"><span>Just say</span> &ldquo;add an animated stat here&rdquo;</p>
     </article>
     <article class="card" id="skill-vo-gapfill">
       <div class="card-top"><code>vo-gapfill</code></div>
-      <p>Missing a sentence? Writes the line in your on-camera voice and fills the gap with your own text-to-speech voice.</p>
+      <p>Forgot to say something? Fills the gap with a line in your own text-to-speech voice.</p>
       <p class="say"><span>Just say</span> &ldquo;do a voiceover for that gap&rdquo;</p>
     </article>
     <article class="card" id="skill-camera-ab-compare">
       <div class="card-top"><code>camera-ab-compare</code><span class="badge">Resolve Studio</span></div>
-      <p>Two phones, one walk: works out which phone shot what, pairs matching moments and builds the side-by-side.</p>
-      <p class="say"><span>Just say</span> &ldquo;compare these two phones side by side&rdquo;</p>
+      <p>Two phones, one walk: builds the side-by-side comparison video.</p>
+      <p class="say"><span>Just say</span> &ldquo;compare these two phones&rdquo;</p>
     </article>
   </div>
 </div>
 <div class="group" id="g-polish">
-  <div class="group-head"><h3>Polish</h3><p>Notes, drafts, audio and shaky shots.</p></div>
+  <div class="group-head"><h3>Polish</h3><p>Your notes, cleaner sound, steadier shots.</p></div>
   <div class="cards">
     <article class="card" id="skill-edit-review-notes">
       <div class="card-top"><code>edit-review-notes</code></div>
-      <p>Watch the draft, type or dictate notes in EditReview as you go, and Claude applies them. The next draft shows only what changed.</p>
+      <p>Watch your draft, jot notes as you go, and Claude makes the changes.</p>
       <p class="say"><span>Just say</span> &ldquo;apply my review notes&rdquo;</p>
     </article>
     <article class="card" id="skill-resolve-export-draft">
       <div class="card-top"><code>resolve-export-draft</code></div>
-      <p>A review draft of your Resolve timeline, rendered from the command line. No Deliver page.</p>
+      <p>Renders a draft of your DaVinci Resolve timeline to watch anywhere.</p>
       <p class="say"><span>Just say</span> &ldquo;render a draft&rdquo;</p>
     </article>
     <article class="card" id="skill-voice-clear">
       <div class="card-top"><code>voice-clear</code><span class="badge">Apple silicon</span></div>
-      <p>Takes the room echo and noise out of your voice, on your Mac, only when you ask.</p>
+      <p>Takes the echo and background noise out of your voice, on your Mac.</p>
       <p class="say"><span>Just say</span> &ldquo;clean up my voice&rdquo;</p>
     </article>
     <article class="card" id="skill-stabilize-clips">
       <div class="card-top"><code>stabilize-clips</code></div>
-      <p>Smooths shaky handheld clips, measures whether it helped, and keeps the original when it didn&#x27;t.</p>
+      <p>Smooths shaky phone clips, and keeps the original if it didn&#x27;t help.</p>
       <p class="say"><span>Just say</span> &ldquo;stabilize these clips&rdquo;</p>
     </article>
   </div>
 </div>
 <div class="group" id="g-ship">
-  <div class="group-head"><h3>Ship</h3><p>Everything YouTube asks for, ready to paste.</p></div>
+  <div class="group-head"><h3>Ship</h3><p>Everything YouTube asks for.</p></div>
   <div class="cards">
     <article class="card star" id="skill-ship-it">
       <div class="card-top"><code>ship-it</code></div>
-      <p>Two words from approved draft to ready to upload: master, loudness, title, chapters, thumbnails and a paste sheet.</p>
+      <p>From approved draft to ready to upload, in two words.</p>
       <p class="say"><span>Just say</span> &ldquo;ship it&rdquo;</p>
     </article>
     <article class="card" id="skill-youtube-release">
       <div class="card-top"><code>youtube-release</code></div>
-      <p>Title options in your style, a description with chapters and your links, and loudness fixed for YouTube.</p>
+      <p>Titles, a description with chapters, and the volume set right for YouTube.</p>
       <p class="say"><span>Just say</span> &ldquo;write the title and chapters&rdquo;</p>
     </article>
     <article class="card" id="skill-youtube-thumbnails">
       <div class="card-top"><code>youtube-thumbnails</code></div>
-      <p>Thumbnails from your real footage, with the hook lifted from your own words, checked for privacy and legibility.</p>
+      <p>Thumbnails made from your real footage, with words from your own video.</p>
       <p class="say"><span>Just say</span> &ldquo;make thumbnails&rdquo;</p>
     </article>
     <article class="card" id="skill-studio-thumbnails">
       <div class="card-top"><code>studio-thumbnails</code></div>
-      <p>Adds AI concepts from YouTube Studio&#x27;s Ask Studio and Gemini to the pool, next to the real-footage ones.</p>
+      <p>More thumbnail ideas from YouTube Studio&#x27;s and Gemini&#x27;s AI.</p>
       <p class="say"><span>Just say</span> &ldquo;Gemini thumbnails with my face&rdquo;</p>
     </article>
     <article class="card" id="skill-shorts">
       <div class="card-top"><code>shorts</code></div>
-      <p>Finds Shorts in your finished video, word-precise with a hook in the first two seconds, reframed for 9:16 and captioned.</p>
+      <p>Finds your best moments and turns them into captioned vertical Shorts.</p>
       <p class="say"><span>Just say</span> &ldquo;make Shorts from this video&rdquo;</p>
     </article>
   </div>
 </div>
 <div class="group" id="g-life">
-  <div class="group-head"><h3>Home videos</h3><p>The trip, the dog, the birthday. Not for the channel.</p></div>
+  <div class="group-head"><h3>Home videos</h3><p>The trip, the dog, the birthday.</p></div>
   <div class="cards">
-    <article class="card" id="skill-home-video">
+    <article class="card star" id="skill-home-video">
       <div class="card-top"><code>home-video</code></div>
-      <p>A trip, pet or family montage from a pile of phone clips, scored with music. A privacy mode keeps every frame on your Mac.</p>
+      <p>Turns a pile of trip, pet or family clips into a movie with music. Can keep every frame private on your Mac.</p>
       <p class="say"><span>Just say</span> &ldquo;make a video of our trip&rdquo;</p>
     </article>
     <article class="card" id="skill-montage-music">
       <div class="card-top"><code>montage-music</code></div>
-      <p>Picks tracks you have the rights to, finds the beats and the right place to start, and mixes them under the clips.</p>
+      <p>Picks songs that fit the mood and times them to the cuts.</p>
       <p class="say"><span>Just say</span> &ldquo;pick a song for this part&rdquo;</p>
     </article>
   </div>
 </div>
 <div class="group" id="g-tidy">
-  <div class="group-head"><h3>Keep it tidy</h3><p>Footage in, projects out, drive space back.</p></div>
+  <div class="group-head"><h3>Keep it tidy</h3><p>Footage in, drive space back.</p></div>
   <div class="cards">
     <article class="card" id="skill-footage-triage">
       <div class="card-top"><code>footage-triage</code></div>
-      <p>Sorts an import dump into projects, the home-video archive, the b-roll library or the trash. You approve every move.</p>
-      <p class="say"><span>Just say</span> &ldquo;sort this import folder&rdquo;</p>
+      <p>Sorts a messy folder of clips into the right places. You approve every move.</p>
+      <p class="say"><span>Just say</span> &ldquo;sort this folder&rdquo;</p>
     </article>
     <article class="card" id="skill-archive-project">
       <div class="card-top"><code>archive-project</code></div>
-      <p>Done with a video? Keeps the finals and the good b-roll and clears the rest. Dry run first, copy and verify before any delete.</p>
+      <p>Done with a video? Keeps what matters and frees up the space. Asks first.</p>
       <p class="say"><span>Just say</span> &ldquo;archive this project&rdquo;</p>
     </article>
     <article class="card" id="skill-new-project">
       <div class="card-top"><code>new-project</code></div>
-      <p>A new project folder in your own layout, ready for footage.</p>
-      <p class="say"><span>Just say</span> &ldquo;start a new project called Backpack review&rdquo;</p>
+      <p>Sets up a tidy folder for your next video.</p>
+      <p class="say"><span>Just say</span> &ldquo;start a new project&rdquo;</p>
     </article>
   </div>
 </div>
 <div class="group" id="g-yours">
-  <div class="group-head"><h3>Make it yours</h3><p>It&#x27;s plain text. Change anything.</p></div>
+  <div class="group-head"><h3>Make it yours</h3><p>Change anything by asking.</p></div>
   <div class="cards">
     <article class="card" id="skill-setup">
       <div class="card-top"><code>setup</code></div>
-      <p>About ten minutes of skippable questions, and every skill knows where your stuff lives.</p>
-      <p class="say"><span>Just say</span> &ldquo;/setup&rdquo;</p>
+      <p>A few skippable questions, so everything knows where your stuff lives.</p>
+      <p class="say"><span>Just say</span> &ldquo;set me up&rdquo;</p>
     </article>
     <article class="card" id="skill-customize">
       <div class="card-top"><code>customize</code></div>
-      <p>Say &quot;from now on...&quot; once and it remembers. Or ask it to change any skill, or write you a new one.</p>
+      <p>Say &quot;from now on...&quot; and it remembers. Or ask it to change how anything works.</p>
       <p class="say"><span>Just say</span> &ldquo;from now on, keep my jokes&rdquo;</p>
     </article>
     <article class="card" id="skill-editing-coach">
       <div class="card-top"><code>editing-coach</code></div>
-      <p>Learning to edit? J-cuts, pacing, colour in Resolve, stop motion, and feedback on your own clips.</p>
-      <p class="say"><span>Just say</span> &ldquo;how do I color correct in Resolve?&rdquo;</p>
+      <p>Learning to edit? Ask anything and get step-by-step answers and feedback.</p>
+      <p class="say"><span>Just say</span> &ldquo;what&#x27;s a J-cut?&rdquo;</p>
     </article>
     <article class="card" id="skill-aroll-benchmark">
       <div class="card-top"><code>aroll-benchmark</code><span class="badge">dev</span></div>
-      <p>For tinkerers: scores the automatic cut against your own edit of the same take.</p>
+      <p>For tinkerers: scores the automatic cut against your own edit.</p>
       <p class="say"><span>Just say</span> &ldquo;score the auto cut against my edit&rdquo;</p>
     </article>
   </div>
 </div>
 <!-- /gen:skills -->
+    </details>
   </div>
 </section>
 
-<section id="learns">
+<section id="learns" style="padding-top: 24px;">
   <div class="wrap learn">
     <div>
-      <div class="kicker">It learns your taste</div>
+      <div class="kicker">It learns your style</div>
       <h2>Say it once.<br><span class="grad">It sticks.</span></h2>
-      <ul class="points">
-        <li><b>Preferences.</b> "The cuts are too tight" or "always keep my jokes" goes into <code>user/preferences.md</code>, and every skill reads that file first.</li>
-        <li><b>Your own copy.</b> Ask Claude to change how a skill works, add a step, or write a new one. It edits the files in your folder, and <code>git diff</code> shows exactly what changed.</li>
-        <li><b>Undo is one sentence.</b> "Put the skill back how it was" works too.</li>
-      </ul>
+      <p class="sub">Tell it what you like, and it remembers for every video after. Want it to work differently? Ask, and it changes itself.</p>
     </div>
     <div>
       <div class="chat">
-        <div class="bubble you">the cuts feel rushed. leave a breath before each new sentence</div>
-        <div class="bubble claude">Noted. I added it to your preferences, so the next draft and every one after it keeps a short pause at sentence starts.</div>
+        <div class="bubble you">the cuts feel rushed. leave a breath before each sentence</div>
+        <div class="bubble claude">Got it. Every draft from now on keeps a short pause there.</div>
       </div>
       <div class="file">
         <div class="fname">user/preferences.md</div>
-        <pre>## Editing
-- Keep jokes and tangents that land.
-<span class="add">+ Leave a short breath before each new sentence; don't cut it tight.</span>
-## Thumbnails
-- Big, two-word titles.</pre>
+        <pre>- Keep jokes that land.
+<span class="add">+ Leave a short breath before each new sentence.</span></pre>
       </div>
     </div>
   </div>
 </section>
 
-<section id="start" style="padding-top: 40px;">
+<section id="privacy" style="padding-top: 24px;">
   <div class="wrap center">
-    <div class="kicker">Get started</div>
-    <h2>Rolling in three steps.</h2>
-    <div class="steps" style="text-align: left;">
-      <div class="step">
-        <h3>Install Claude Code and ffmpeg</h3>
-        <p>Claude Code from <a href="https://code.claude.com/docs/en/setup">Anthropic's setup page</a>, then ffmpeg:</p>
-        <div class="code"><pre>brew install ffmpeg</pre><button class="copy" type="button">Copy</button></div>
-      </div>
-      <div class="step">
-        <h3>Clone it and open Claude</h3>
-        <p>Always start Claude from this folder. Your projects can live anywhere.</p>
-        <div class="code"><pre>git clone https://github.com/js-commit/video-editing-skills && cd video-editing-skills && claude</pre><button class="copy" type="button">Copy</button></div>
-      </div>
-      <div class="step">
-        <h3>Type /setup</h3>
-        <p>It checks what's installed and asks where your stuff lives. Every question can be skipped.</p>
-        <div class="code"><pre>/setup</pre><button class="copy" type="button">Copy</button></div>
-      </div>
-    </div>
-    <p class="then">Then hand it a take: <code>draft this a-roll: ~/Movies/my-raw-take.mp4</code></p>
-    <ul class="needs" style="text-align: left;">
-      <li>A Claude plan with Opus (Pro or Max: setup asks and tunes the agents to it)</li>
-      <li>Python 3.9+ (on a Mac, Apple's Command Line Tools have it)</li>
-      <li>Transcription: ElevenLabs Scribe (free tier) or voz, offline on Apple silicon</li>
-      <li>Optional: DaVinci Resolve (Studio for full automation), a NAS for archives</li>
-    </ul>
-  </div>
-</section>
-
-<section id="privacy" style="padding-top: 40px;">
-  <div class="wrap center">
-    <div class="kicker">Your footage, your call</div>
-    <h2>Nothing leaves without saying so.</h2>
-    <div class="trust" style="text-align: left;">
-      <div><h3>Files stay put</h3><p>Your video files stay on your computer. Claude reads the transcripts, text and contact sheets a skill shows it, and skills that look at frames say so.</p></div>
-      <div><h3>A private mode</h3><p>For home videos, a local vision model describes frames on your Mac, so no frame leaves it. Or pick no-frames and nothing looks at a frame at all.</p></div>
-      <div><h3>You press upload</h3><p>Nothing is ever uploaded to YouTube for you. You get a paste sheet and upload in YouTube Studio yourself.</p></div>
-      <div><h3>Ask before deleting</h3><p>None of your footage or projects is deleted, moved or overwritten without your yes. Archiving is a dry run first, always.</p></div>
+    <div class="kicker">Privacy</div>
+    <h2>Your footage, your call.</h2>
+    <div class="trust">
+      <div><h3>Files stay put</h3><p>Your videos stay on your computer. Claude reads the transcript and the stills a step shows it, and says when it looks.</p></div>
+      <div><h3>Private mode</h3><p>For family videos, a model on your Mac looks at the frames, so none of them leave it.</p></div>
+      <div><h3>You press upload</h3><p>Nothing goes to YouTube for you. You get a sheet to paste from.</p></div>
+      <div><h3>Asks first</h3><p>Nothing is deleted, moved or overwritten without your yes.</p></div>
     </div>
   </div>
 </section>
 
-<section id="faq" style="padding-top: 40px;">
+<section id="faq" style="padding-top: 24px;">
   <div class="wrap">
     <div class="center"><div class="kicker">Questions</div><h2>Fair questions.</h2></div>
     <div class="faq">
-      <details><summary>Is it really free?</summary><p>The skills are MIT licensed. You need Claude Code with a Claude plan, and its usage counts against that plan: a 15-minute a-roll draft runs a handful of Opus agents. Transcription is ElevenLabs Scribe (free tier, then per minute) or voz, which is free and runs offline on an Apple silicon Mac with macOS 26.</p></details>
-      <details><summary>Do I need DaVinci Resolve?</summary><p>No. The ffmpeg path does the whole edit: cut, b-roll, graphics and the final render. With DaVinci Resolve Studio, Claude builds and changes the timeline for you; the free version works through XML import.</p></details>
-      <details><summary>Mac only?</summary><p>macOS gets the most testing, and the review apps (EditReview, BulkCut) and the on-device audio tools ship signed and notarized for it, with nothing to compile. The ffmpeg paths are written to work on Windows and Linux too.</p></details>
-      <details><summary>Will it make my videos sound like AI?</summary><p>It doesn't write your video. It cuts your own words: mistakes out, everything you meant to say kept, tangents and jokes included. Titles and descriptions are written from what you actually said, and you pick.</p></details>
-      <details><summary>I already use Video Haircut.</summary><p>aroll-draft's cut list and edited transcript open in <a href="https://github.com/js-commit/video-haircut">Video Haircut</a> for manual touch-ups. Say "haircut this video" and it knows what you mean.</p></details>
-      <details><summary>Can I change how it edits?</summary><p>Yes, that's the point. Every skill is a text file in your copy. Tell Claude what you want different and it edits the skill; tell it "from now on..." and it writes it to your preferences.</p></details>
-    </div>
-  </div>
-</section>
-
-<section class="closing">
-  <div class="wrap">
-    <h2>Stop cutting retakes.<br><span class="grad">Start making videos.</span></h2>
-    <div class="cta">
-      <a class="btn btn-primary" href="https://github.com/js-commit/video-editing-skills">Get it on GitHub</a>
-      <a class="btn btn-ghost" href="#start">How to start</a>
+      <details><summary>What do I need?</summary><p>Claude Code with a Claude plan (Pro or Max) and a Mac works best. Setup checks the rest, offers to install ffmpeg, and helps you pick how speech becomes text (ElevenLabs Scribe has a free tier; on newer Macs, voz is free and offline). DaVinci Resolve is optional.</p></details>
+      <details><summary>Is it free?</summary><p>Yes, it's open source (MIT). Claude Code uses your Claude plan, and a long recording uses a fair bit of it.</p></details>
+      <details><summary>Do I need editing software?</summary><p>No. It can do the whole edit on its own. If you use DaVinci Resolve, it can build the timeline there for you to fine-tune.</p></details>
+      <details><summary>Will it make my video sound like AI?</summary><p>No. The first cut only cuts your own words: the mistakes go, everything you meant to say stays, jokes included.</p></details>
+      <details><summary>Windows or Linux?</summary><p>The Mac gets the most testing and the ready-made apps. The core editing is written to work on Windows and Linux too.</p></details>
+      <details><summary>I use Video Haircut.</summary><p>The first cut opens in <a href="https://github.com/js-commit/video-haircut">Video Haircut</a> for touch-ups.</p></details>
     </div>
   </div>
 </section>
@@ -646,7 +525,7 @@
 <footer>
   <div class="wrap">
     <p>Made by a YouTuber who got tired of cutting retakes. MIT licensed. <a href="https://github.com/js-commit/video-editing-skills">Source on GitHub</a>.</p>
-    <p>DaVinci Resolve is a trademark of Blackmagic Design; YouTube and Gemini of Google; Claude of Anthropic. Not affiliated with or endorsed by any of them.</p>
+    <p>DaVinci Resolve is a trademark of Blackmagic Design; YouTube and Gemini of Google; Claude of Anthropic. Not affiliated with any of them.</p>
   </div>
 </footer>
 
@@ -660,7 +539,7 @@
     io.observe(el);
   };
 
-  // The haircut: aroll-draft's own example, in its own format (~word~ = cut).
+  // The haircut: aroll-draft's own worked example, in its own format (~word~ = cut).
   const TAKE = [
     "Okay, so this is the backpack I've been carrying every day for the last two months.",
     "~Is~ ~this~ ~thing~ ~on?~ ~Testing,~ ~one,~ ~two.~",
@@ -693,16 +572,16 @@
       ln.appendChild(w);
       words++; if (!k.cut) kept++;
       if (!run || run.cut !== k.cut) {
-        run = { cut: k.cut, el: document.createElement("div") };
+        run = { cut: k.cut, el: document.createElement("div"), n: 0 };
         run.el.className = "seg" + (k.cut ? " cut" : "");
-        run.el.style.flexGrow = 0; run.n = 0; tl.appendChild(run.el);
+        tl.appendChild(run.el);
       }
       run.el.style.flexGrow = ++run.n;
     });
     ln.allCut = toks.every((k) => k.cut);
     if (ln.allCut) ln.classList.add("all-cut"); else keptLines++;
     script.appendChild(ln);
-    if (i < TAKE.length - 1) {                       // silence between lines: cut down to a breath
+    if (i < TAKE.length - 1) {                       // the silence between lines gets cut too
       const g = document.createElement("div");
       g.className = "seg gap cut"; g.style.flexGrow = GAP * WPS; tl.appendChild(g);
     }
@@ -716,7 +595,7 @@
   const finalState = () => {
     demo.querySelectorAll(".cut").forEach((el) => el.classList.add("marked"));
     status.classList.add("done");
-    txt.textContent = `Done. ${TAKE.length} lines → ${keptLines}, ready in Resolve`;
+    txt.textContent = "Done. Clean first cut, ready to watch";
     setClock(cutSec, true);
   };
 
@@ -726,9 +605,9 @@
     demo.classList.remove("collapse"); status.classList.remove("done");
     demo.querySelectorAll(".marked").forEach((el) => el.classList.remove("marked"));
     setClock(rawSec, false);
-    txt.textContent = `Transcribing · ${words} words, word-level timing`;
-    await sleep(1300);
-    txt.textContent = "Opus editor · cutting retakes, false starts and mic checks";
+    txt.textContent = "Listening to every word";
+    await sleep(1200);
+    txt.textContent = "Cutting retakes, stumbles and mic checks";
     for (const ln of lines) {
       const cuts = ln.querySelectorAll(".w.cut");
       if (!cuts.length) { await sleep(120); continue; }
@@ -737,10 +616,10 @@
     }
     tl.querySelectorAll(".seg.cut").forEach((s) => s.classList.add("marked"));
     await sleep(500);
-    txt.textContent = "Reviser · reading it back like a viewer";
+    txt.textContent = "Reading it back like a viewer";
     for (const ln of lines) { if (ln.allCut) continue; ln.classList.add("scan"); await sleep(110); ln.classList.remove("scan"); }
     await sleep(300);
-    txt.textContent = "Snapping every cut to the waveform";
+    txt.textContent = "Making every cut seamless";
     demo.classList.add("collapse");
     const t0 = performance.now(), dur = 900;
     await new Promise((res) => {
@@ -759,21 +638,13 @@
   setClock(rawSec, false);
   if (reduce) finalState(); else onView(demo, play);
 
-  // The /skills terminal types itself once it scrolls into view.
-  const term = document.getElementById("term"), prompt = document.getElementById("prompt");
-  if (!reduce) {
-    const cmd = prompt.textContent;
-    term.classList.add("typing");
-    prompt.innerHTML = '<span class="caret"></span>';
-    onView(term, async () => {
-      for (let i = 1; i <= cmd.length; i++) { prompt.innerHTML = cmd.slice(0, i) + '<span class="caret"></span>'; await sleep(90); }
-      await sleep(250);
-      prompt.textContent = cmd;
-      for (const r of term.querySelectorAll(".t-row")) { r.classList.add("on"); await sleep(28); }
-    });
-  }
+  // A link to one skill or group (#skill-aroll-draft, #g-cut) opens the drawer first.
+  const openFromHash = () => {
+    const el = /^#(skill|g)-/.test(location.hash) && document.querySelector(location.hash);
+    if (el) { el.closest("details").open = true; el.scrollIntoView(); }
+  };
+  addEventListener("hashchange", openFromHash); openFromHash();
 
-  // Copy buttons
   document.querySelectorAll(".copy").forEach((b) => b.addEventListener("click", async () => {
     try { await navigator.clipboard.writeText(b.previousElementSibling.textContent); b.textContent = "Copied"; }
     catch (e) { b.textContent = "Select it"; }

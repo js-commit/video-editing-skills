@@ -13,15 +13,16 @@ Claude) can change. It learns your taste as you work.
 
 ## Install
 
-1. Install [Claude Code](https://code.claude.com/docs/en/setup) and
-   [ffmpeg](https://ffmpeg.org/download.html) (`brew install ffmpeg` on a Mac).
-2. Clone and open:
+1. Install [Claude Code](https://code.claude.com/docs/en/setup).
+2. Let Claude download it (no git needed), then open it:
 
    ```sh
-   git clone https://github.com/js-commit/video-editing-skills video-editing-skills && cd video-editing-skills && claude
+   claude "install github.com/js-commit/video-editing-skills to ~/video-editing-skills"
+   cd ~/video-editing-skills && claude
    ```
 
-3. Type **`/setup`**. Claude checks what is installed and asks a few questions
+   Or clone it yourself: `git clone https://github.com/js-commit/video-editing-skills`.
+3. Type **`/setup`** (a fresh copy offers it on its own). Claude checks what is installed and asks a few questions
    (where your projects live, whether you use DaVinci Resolve, where to archive,
    whether you have a NAS…). Every question can be skipped; skills ask for what
    they need later.

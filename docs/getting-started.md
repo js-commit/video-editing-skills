@@ -38,12 +38,14 @@ Run `claude` once in a terminal and sign in.
 
 ## 3. Get this toolkit
 
+Let Claude download it; you don't need git:
+
 ```sh
-git clone https://github.com/js-commit/video-editing-skills video-editing-skills
-cd video-editing-skills
+claude "install github.com/js-commit/video-editing-skills to ~/video-editing-skills"
+cd ~/video-editing-skills
 ```
 
-(No git? Download the ZIP from the repository page and unzip it.)
+(Or clone it yourself: `git clone https://github.com/js-commit/video-editing-skills`.)
 
 Put it anywhere you like; it doesn't need to be next to your videos. Your own
 settings and preferences stay in its `user/` folder and are never uploaded

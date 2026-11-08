@@ -9,9 +9,9 @@ and archive the project when you are done.
 It is a starting point, not a product: every skill is a plain text file you (or
 Claude) can change. It learns your taste as you work.
 
-## Install (one command)
+## Install
 
-1. Install [Claude Code](https://docs.claude.com/en/docs/claude-code/overview) and
+1. Install [Claude Code](https://code.claude.com/docs/en/setup) and
    [ffmpeg](https://ffmpeg.org/download.html) (`brew install ffmpeg` on a Mac).
 2. Clone and open:
 
@@ -82,7 +82,8 @@ You get, next to the video:
 - **Your copy.** Ask Claude to change how any skill works, add a step, or write a
   new skill. It edits the files in this folder; `git diff` shows what changed.
 - **Settings.** `user/settings.json` holds your folders and tools. Ask Claude to
-  change them or edit the file. Nothing in `user/` is ever committed.
+  change them or edit the file. Your own files in `user/` (settings, preferences, cache,
+  backups) are git-ignored.
 
 ## Customize your keyboard shortcuts
 
@@ -102,7 +103,8 @@ Editing is a keyboard job. Set up shortcuts you like before your first edit:
   are on Pro or Max and sets the other agents to match (Max: Opus at full effort
   for the frame-reading agents too; `python3 tools/agent_models.py apply max`).
   Switch any agent to another model or effort in `.claude/agents/`.
-- Python 3.9 or newer (macOS ships it) and ffmpeg.
+- Python 3.9 or newer and ffmpeg. On a Mac, Apple's Command Line Tools include Python: run
+  `python3 --version` and accept the install if macOS offers it.
 - A transcription engine: ElevenLabs Scribe through their API (best for cutting:
   keeps "um"s and has precise word times; account with a free tier, then per
   minute) or, on an Apple silicon Mac with macOS 26+, `voz` (offline, free,
@@ -136,7 +138,8 @@ Linux too.
 - Claude Code usage counts against your plan. A 15-minute a-roll draft runs a
   handful of Opus subagents.
 - Nothing is ever uploaded to YouTube for you: you upload in YouTube Studio.
-  Nothing is deleted or installed without your explicit yes.
+  None of your footage or projects is deleted, moved or overwritten, and nothing is
+  installed, without your explicit yes.
 
 ## Folder map
 
@@ -174,8 +177,9 @@ are put together.
 
 ## Trademarks
 
-DaVinci Resolve is a trademark of Blackmagic Design. YouTube is a trademark of
-Google. ElevenLabs, TimeBolt and Claude belong to their respective owners. This
+DaVinci Resolve is a trademark of Blackmagic Design. YouTube and Gemini are trademarks
+of Google. ElevenLabs, MiniMax, Premiere Pro, Final Cut Pro, Avid Media Composer, Pro
+Tools, TimeBolt, Claude and other product names belong to their respective owners. This
 project is not affiliated with or endorsed by any of them.
 
 ## License

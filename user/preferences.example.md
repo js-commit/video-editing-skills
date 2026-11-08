@@ -17,7 +17,7 @@ Edit freely.
 - (example) Titles under 60 characters, no clickbait words.
 
 ## home-video
-- (example) privacy: frames   (or "no-frames": Claude never looks at the footage itself)
+- (example) privacy: frames   (or "local": only the vision model on this computer looks at the footage, Claude reads its descriptions; or "no-frames": nothing looks at the footage)
 - (example) Keep montages around 4 minutes; end on a slow shot.
 
 ## montage-music

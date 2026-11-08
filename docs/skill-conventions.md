@@ -49,7 +49,7 @@ SKILL.md, `${CLAUDE_SKILL_DIR}` is the skill's folder and the repo root is
 | `archive-project` | Archives a finished project (lean: finals + b-roll only, or keep everything). |
 | `youtube-release` | Title, description, chapters, loudness, and a paste sheet for uploading by hand in YouTube Studio. |
 | `youtube-thumbnails` | Thumbnails from real footage (plus optional AI), privacy + legibility check. |
-| `ship-it` | One command from approved draft to published video, in the user's order. |
+| `ship-it` | One command from approved draft to an upload-ready release (master, loudness, metadata, thumbnails, paste sheet), in the user's order; the user uploads and publishes in YouTube Studio. |
 | `shorts` | Vertical Shorts from a long-form video (ffmpeg default, Resolve optional). |
 | `home-video` | Vacation / family / pet montages from phone and camera clips. |
 | `montage-music` | Fits music the user has rights to onto a montage (beats, in-points, levels). |

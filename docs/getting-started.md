@@ -30,15 +30,9 @@ You need about 15 minutes for the steps below.
 
 ## 2. Install Claude Code
 
-Follow Anthropic's official Claude Code install instructions for your system
-(search for "Claude Code install"). At the time of writing:
-
-```sh
-# macOS / Linux
-curl -fsSL https://claude.ai/install.sh | bash
-# Windows (PowerShell)
-irm https://claude.ai/install.ps1 | iex
-```
+Follow Anthropic's official install instructions for your system:
+[Set up Claude Code](https://code.claude.com/docs/en/setup). They change from time to
+time, so use that page rather than a copy of its commands.
 
 Run `claude` once in a terminal and sign in.
 

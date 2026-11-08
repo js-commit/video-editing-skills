@@ -2,8 +2,8 @@
    Every style is a pure function of time inside seek(t): no CSS transitions, no timers, no state between frames,
    so any frame can be rendered on its own.
    Adapted from github.com/Barty-Bart/motion-graphics (skills/motion-broll/engine/motion.js, MIT, (c) 2026 Bart -
-   see NOTICE.md). Added here: a themeable palette (M.C, overridden by window.THEME from the user's preferences),
-   M.count, and ?t= stills. */
+   see NOTICE.md). Added here: a themeable palette (M.C, overridden by window.THEME from the user's preferences,
+   also set as CSS variables --bg, --muted ...), M.count, and ?t= stills. */
 (function(){
 const M = window.M = {};
 // default palette: dark canvas, white ink, one accent per idea. build.py merges the user's theme over it.
@@ -11,6 +11,8 @@ M.C = {bg:'#22252b', card:'#2c3038', pill:'#3a3f4b', grid:'#34373f', ink:'#fffff
        blue:'#3987e5', orange:'#d95926', aqua:'#199e70', yellow:'#c98500', red:'#e5484d', ring:'#FFD400', light:'#F4F2EE'};
 Object.assign(M.C, (window.THEME && window.THEME.colors) || {});
 M.C.accent = M.C.accent || M.C.blue;
+// the same palette as CSS variables for a clip's <style>: color:var(--muted), background:var(--card)
+for(const k in M.C) document.documentElement.style.setProperty('--'+k, M.C[k]);
 M.BRAND = (window.THEME && window.THEME.brand) || '';
 const clamp = M.clamp = (x,a=0,b=1)=>Math.min(b,Math.max(a,x));
 M.lerp = (a,b,u)=>a+(b-a)*u;

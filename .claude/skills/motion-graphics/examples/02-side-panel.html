@@ -8,15 +8,15 @@
 .chip{font-size:38px;font-weight:600;white-space:nowrap}
 .cmd{font-size:30px;white-space:nowrap}
 .big{font-size:104px;font-weight:800;letter-spacing:-.02em;white-space:nowrap}
-.unit{font-size:36px;font-weight:600;color:#c3c2b7;white-space:nowrap}
-.ok{position:absolute;width:64px;height:64px;border-radius:32px;background:#199e70;display:flex;align-items:center;justify-content:center}
+.unit{font-size:36px;font-weight:600;color:var(--ink2);white-space:nowrap}
+.ok{position:absolute;width:64px;height:64px;border-radius:32px;background:var(--aqua);display:flex;align-items:center;justify-content:center}
 </style>
 
 <div data-slot="shape">
   <div class="L" id="Lchip"><div class="row" style="left:0;top:0;gap:16px;transform:translate(-50%,-50%)"><span id="ic1"></span><span class="chip">Runs offline</span></div></div>
   <div class="L" id="Lcard">
     <div class="row" style="left:-262px;top:34px;gap:14px"><span id="ic2"></span><span class="chip" style="font-size:34px">Runs offline</span></div>
-    <div class="a mono cmd" style="left:-262px;top:112px;color:#c3c2b7"><span style="color:#9a9ca3">$&nbsp;</span><span id="typed"></span><span id="caret" style="display:inline-block;width:14px;height:30px;background:#fff;vertical-align:-4px;margin-left:3px"></span></div>
+    <div class="a mono cmd" style="left:-262px;top:112px;color:var(--ink2)"><span style="color:var(--muted)">$&nbsp;</span><span id="typed"></span><span id="caret" style="display:inline-block;width:14px;height:30px;background:var(--ink);vertical-align:-4px;margin-left:3px"></span></div>
     <div class="row" style="left:-262px;top:196px;gap:16px;align-items:baseline"><span class="big" id="rate"></span><span class="unit">files / s</span></div>
     <div class="ok" id="ok" style="left:190px;top:214px"></div>
   </div>

@@ -5,11 +5,11 @@
      DATA is a PLACEHOLDER: a real clip shows only the creator's own measurements (or relative bars with no numbers). -->
 <style>
 .ttl{font-size:46px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
-.sub{font-size:34px;color:#9a9ca3;white-space:nowrap}
+.sub{font-size:34px;color:var(--muted);white-space:nowrap}
 .lbl{position:absolute;width:280px;font-size:38px;font-weight:600;text-align:right;white-space:nowrap}
 .val{position:absolute;font-size:38px;font-weight:700;white-space:nowrap}
 .bar{position:absolute;height:72px;border-radius:14px}
-.tip{position:absolute;padding:14px 22px;border-radius:16px;background:#ffffff;color:#22252b;font-size:34px;font-weight:600;white-space:nowrap}
+.tip{position:absolute;padding:14px 22px;border-radius:16px;background:var(--ink);color:var(--bg);font-size:34px;font-weight:600;white-space:nowrap}
 .ring{position:absolute;border:7px solid var(--ring);border-radius:24px;box-sizing:border-box}
 </style>
 
@@ -24,7 +24,7 @@
     <div class="bar" id="b1" style="left:-370px;top:390px"></div>
     <div class="val" id="v0" style="top:262px"></div>
     <div class="val" id="v1" style="top:402px"></div>
-    <div class="ring" id="ring" style="--ring:#FFD400"></div>
+    <div class="ring" id="ring"></div>
     <div class="tip" id="tip"></div>
   </div>
 </div><!--/shape-->
@@ -37,7 +37,6 @@ const CLICK=1.15, CHART=1.3, BAR=[2.0,2.75], HOVER=4.3, RING=5.1;
 const DATA=[{v:295,c:C.muted},{v:123,c:C.accent}];   // PLACEHOLDER values (seconds)
 const MAXW=760, VMAX=Math.max(...DATA.map(d=>d.v));
 $('pic').innerHTML=M.icon('clock',46,C.ink);
-$('ring').style.setProperty('--ring',C.ring);
 M.setText($('tip'),(DATA[0].v/DATA[1].v).toFixed(1)+'x faster');   // derived from DATA, never typed in
 const grow=DATA.map((d,i)=>M.track(0,[[BAR[i],d.v/VMAX*MAXW,[11,0.9]]]));
 

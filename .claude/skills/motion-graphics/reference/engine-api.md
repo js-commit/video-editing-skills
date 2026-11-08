@@ -69,7 +69,7 @@ Each slot's `</div><!--/name-->` closing marker is how `build.py` finds it: a sl
 
 | Call | What it does |
 |---|---|
-| `M.C` | The palette: `bg` #22252b, `card`, `pill`, `grid`, `ink` white, `ink2`, `muted`, `accent` (= `blue` unless themed), `blue`, `orange`, `aqua`, `yellow`, `red`, `ring` #FFD400 (highlight rings), `light` (a light shape on dark footage). The user's theme (preferences `## motion-graphics`) overrides these: use `C.accent`, `C.bg`, `C.card`… rather than hex codes so a restyle reaches every clip. |
+| `M.C` | The palette: `bg` #22252b, `card`, `pill`, `grid`, `ink` white, `ink2`, `muted`, `accent` (= `blue` unless themed), `blue`, `orange`, `aqua`, `yellow`, `red`, `ring` #FFD400 (highlight rings), `light` (a light shape on dark footage). The user's theme (preferences `## motion-graphics`) overrides these: use `C.accent`, `C.bg`, `C.card`… in the script and the same names as CSS variables in `<style>` (`color:var(--muted)`, `background:var(--card)`), never hex codes, so a restyle reaches every clip. |
 | `M.track(v0, [[t, value, spring?], …])` | A value that changes target many times: the sum of one closed-form spring per change. Returns `t => value`. |
 | `M.ctrack('#hex', [[t,'#hex'], …])` | The same for colours. Returns `t => 'rgb(...)'`. Colours must be `#rrggbb`. |
 | `M.MORPH`, `M.FAST`, `M.SLOW`, `M.SOFT`, `M.CAM`, `M.INSTANT` | Spring presets `[stiffness w, damping z]`. FAST/SLOW for leading/trailing edges; INSTANT for invisible resets. |

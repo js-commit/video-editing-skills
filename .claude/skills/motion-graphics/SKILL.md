@@ -94,7 +94,7 @@ One fragment per clip in `$MO/clips/NN-name.html`: start from the closest exampl
 and follow `reference/engine-api.md`. Cues per clip: `python3 $M/cues.py $W/recipe_vN.json --in <clip in> --to <clip out>`
 (clip-local word starts and ends): a change goes on a word's start, a landing on its end. Set `T` = the slot + 0.5 s.
 Stage `W`/`H` = 1920x1080 for a 16:9 recipe (render `--scale` covers bigger canvases). Use palette names (`C.accent`,
-`C.card`), never hex codes, so the user's theme reaches every clip.
+`C.card` in the script, `var(--accent)`, `var(--card)` in CSS), never hex codes, so the user's theme reaches every clip.
 
 ```
 python3 $M/build.py $MO/clips/*.html                 # -> $MO/dist/NN-name.html (open one in a browser to watch it loop)

@@ -6,12 +6,11 @@
                                                     # (no tier given: settings claude.plan)
 
 Tiers:
-  pro  Claude Pro (about $20 a month). Opus wherever it decides the cut (a-roll
-       editing and revision, multicam angles, b-roll verification); Sonnet or a
-       lower effort for the batch work that reads many frames, so a long project
-       fits the plan's usage limits. This is what the repo ships with.
-  max  Claude Max ($100 a month or more). Opus at full effort for the frame
-       judges and planners too: the maintainer's own setup.
+  pro  Claude Pro. Opus wherever it decides the cut (a-roll editing and
+       revision, multicam angles, b-roll verification); Sonnet or a lower effort
+       for the batch work that reads many frames, so a long project fits the
+       plan's usage limits. This is what the repo ships with.
+  max  Claude Max. Opus at full effort for the frame judges and planners too.
 
 The a-roll editor and reviser run on Opus at the highest effort on both tiers.
 Only the agents in TIERS are touched; every other agent, and anything outside
@@ -99,7 +98,7 @@ def main(argv: list) -> int:
             plan = settings.get("claude.plan")
             if not plan:
                 print("SETTING NOT SET: claude.plan. Ask the user which Claude plan they are on "
-                      "(Pro about $20/month, or Max $100+/month), save it with\n"
+                      "(Claude Pro or Claude Max), save it with\n"
                       f"  python3 {REPO / 'tools/vidkit/settings.py'} set claude.plan pro|max\n"
                       "and re-run.", file=sys.stderr)
                 return 4

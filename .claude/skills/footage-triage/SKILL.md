@@ -30,18 +30,28 @@ the footage.
    the user to mount it before moving.
 4. Needs ffmpeg/ffprobe. exiftool, if installed, gives better dates and device
    names for photos and phones (optional; suggest it, never install it).
-5. **Privacy.** Classification works by Claude looking at contact sheets, which
-   means the frames are sent to Claude (a cloud model). Say so in one line before
-   step 4. For private footage (family, kids, anything sensitive) offer two
-   alternatives: **local mode** (`--local`: a vision model on this computer
-   describes every sheet and the agents sort from those descriptions plus the
-   metadata, never seeing a frame; needs `python3 tools/vlm-describe/vlm_describe.py --check`
-   to say available) or **metadata-only mode**: the agents sort from file names,
-   dates, devices, lengths and sound alone; the user then decides more on the
-   review page (the sheets are still made locally for that page, which only the
-   user opens). Transcription can also be cloud depending on the engine
-   (`transcription.engine`); check with `python3 tools/transcribe.py --check`
-   and mention it if so.
+5. **Privacy.** Classification is done by Claude (a cloud model). What leaves
+   this computer for it, per mode of step 4:
+   - **Every mode**, as text: file and folder names, capture dates, device
+     names, durations, resolutions, sizes, the sound measurements, the user's
+     `--hints`, the names of their projects and project footage folders, and
+     the first 400 characters of each clip's transcript when there is one
+     (made by step 3 `--transcribe`, or a `<clip>.transcript.json` already
+     next to the clip).
+   - **Default**: also the contact sheets themselves (the frames).
+   - **Local mode** (`--local`): no frames; instead a short text description
+     of each sheet, written by a vision model on this computer. Needs
+     `python3 tools/vlm-describe/vlm_describe.py --check` to say available.
+   - **Metadata-only mode** (`--metadata-only`): no frames and no
+     descriptions; the user decides more on the review page (the sheets are
+     still made locally for that page, which only the user opens).
+
+   Say this in one line before step 4, and for private footage (family, kids,
+   anything sensitive) offer local or metadata-only mode. To keep what was
+   said out as well, skip step 3: without `W/audio.json` the briefs carry no
+   transcript text (and no sound measurements). Transcription itself can also
+   be cloud depending on the engine (`transcription.engine`); check with
+   `python3 tools/transcribe.py --check` and mention it if so.
 
 ## Steps
 

@@ -87,6 +87,7 @@ def run_plan(a) -> int:
     work = Path(plan["work_dir"])
     log_p = work / "moves.log.jsonl"
     rows, problems = [], []
+    landing = {}                     # (dest folder, name) -> source: two files must never share a destination
     total = 0
     for m in plan["moves"]:
         if not m.get("dest_dir"):
@@ -104,6 +105,12 @@ def run_plan(a) -> int:
                 continue
             if dst.exists():
                 problems.append(f"{m['key']}: {dst} already exists")
+            for name, from_ in [(src.name, src)] + [(s, src.parent / s) for s in side]:
+                spot = (str(dst.parent), name.casefold())
+                if spot in landing and landing[spot] != str(from_):
+                    problems.append(f"{m['key']}: {landing[spot]} and {from_} would both land as "
+                                    f"{dst.parent / name}")
+                landing.setdefault(spot, str(from_))
             total += src.stat().st_size
             rows.append({"key": m["key"], "src": f, "dst": str(dst), "sidecars": side})
     roots = unreachable_roots(plan)

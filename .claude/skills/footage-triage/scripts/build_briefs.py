@@ -12,7 +12,9 @@ the destinations the user has set up and their existing projects. With
 and transcript snippets, and say so. With --local the vision model on this
 computer (tools/vlm-describe) describes every sheet first and the briefs carry
 those descriptions instead of sheet paths: the agents still never see a frame.
-The descriptions are kept in W/local_descriptions.jsonl (resumable).
+The descriptions are kept in W/local_descriptions.jsonl (resumable). In every
+mode a clip's transcript snippet (its first 400 characters) is included when
+W/audio.json has one: leave audio_check.py out to keep speech out of the briefs.
 
 A unit with more sheets than --max-sheets gets an evenly spread subset.
 Writes W/briefs/brief_N.json; each names the verdicts file its agent writes

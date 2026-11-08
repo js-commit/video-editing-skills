@@ -36,12 +36,19 @@ def build_move(key, unit, files, dest, project, new_project, folder_name, confid
 
 
 def check(plan: dict) -> list:
-    problems, seen = [], {}
+    problems, seen, landing = [], {}, {}
     for m in plan["moves"]:
         for f in m["files"]:
             if f in seen:
                 problems.append(f"{Path(f).name} is planned twice ({seen[f]} and {m['key']})")
             seen[f] = m["key"]
+            if m["dest_dir"]:         # two sources with one name (cards restart numbering) would collide
+                spot = (str(Path(m["dest_dir"])), Path(f).name.casefold())
+                if spot in landing and landing[spot] != f:
+                    problems.append(f"{m['key']}: {landing[spot]} and {f} would both land as "
+                                    f"{Path(m['dest_dir']) / Path(f).name}: split the unit or give one a "
+                                    f"different folder_name")
+                landing.setdefault(spot, f)
             if m["dest_dir"] and (Path(m["dest_dir"]) / Path(f).name).exists():
                 problems.append(f"{m['key']}: {Path(m['dest_dir']) / Path(f).name} already exists (never overwritten)")
             if not Path(f).exists():

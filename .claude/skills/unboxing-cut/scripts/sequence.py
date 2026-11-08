@@ -410,6 +410,7 @@ def main():
         src.floor_full = float(np.percentile(np.concatenate(fulls), 10)) if fulls else -90.0
     beats = plan(spec["moments"], sources, pace)
     total = beats[-1]["end_s"]
+    os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)   # e.g. <drafts>/unboxing/ on a first run
     plan_path = os.path.splitext(a.out)[0] + ".plan.json"
     json.dump({"schema": "unboxing-cut/plan-1", "name": spec.get("name"), "product": spec.get("product"),
                "pace": a.pace, "pace_profile": pace, "moments_file": os.path.abspath(a.moments),

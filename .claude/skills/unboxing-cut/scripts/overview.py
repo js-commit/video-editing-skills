@@ -42,7 +42,7 @@ FONT = font(18)
 
 
 def duration(path):
-    out = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path],
+    out = subprocess.run([media.ffprobe(), "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path],
                          capture_output=True, text=True, check=True).stdout
     return float(out.strip())
 

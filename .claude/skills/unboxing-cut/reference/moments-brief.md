@@ -9,8 +9,8 @@ clip. Laid back to back, in order, the clips play as a paced YouTube-style unbox
 
 - Show the box first.
 - Then the opening, for its **sound**: the knife on the tape, tearing a seal, taking off the
-  shrink wrap, peeling a film, a lid sliding off. It's an ASMR kind of thing, fast paced but
-  not too rapid: a balance.
+  shrink wrap, peeling a film, a lid sliding off. The goal is an ASMR-style pace: brisk, but
+  never rushed.
 - **Pause on every product.** When a product comes out (the phone, a cable, the case, a
   screen protector), hold it. If the hands turn it side to side, keep that motion for a bit.
 - **Cut the dead time:** moving stuff out of the way, an empty frame, nothing happening,
@@ -39,7 +39,7 @@ A sequence may span several takes: one source letter per take, moments in filmed
   "schema": "unboxing-cut/moments-1",
   "name": "brand-case-unboxing",
   "product": "Brand Model case for the Phone X",
-  "kind": "unboxing",                       // or "install"
+  "kind": "unboxing",
   "device": "phone",
   "tags": ["brand-case", "phone-x", "unboxing", "asmr"],
   "sources": {
@@ -52,6 +52,8 @@ A sequence may span several takes: one source letter per take, moments in filmed
   ]
 }
 ```
+
+The top-level `kind` is `"unboxing"` or `"install"`.
 
 A source is a path string, or an object with:
 

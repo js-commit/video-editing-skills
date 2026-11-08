@@ -17,6 +17,10 @@ try:
 except ImportError:
     sys.exit("this script needs pillow: python3 -m pip install pillow")
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "tools"))
+from vidkit import media  # noqa: E402
+
+
 def font(size):
     for f in ("/System/Library/Fonts/Menlo.ttc", "/System/Library/Fonts/Supplemental/Courier New.ttf",
               "C:/Windows/Fonts/consola.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"):
@@ -30,7 +34,7 @@ W = 480
 
 
 def grab(path, t):
-    out = subprocess.run(["ffmpeg", "-v", "error", "-ss", f"{max(0.0, t):.4f}", "-i", path, "-frames:v", "1",
+    out = subprocess.run([media.ffmpeg(), "-v", "error", "-ss", f"{max(0.0, t):.4f}", "-i", path, "-frames:v", "1",
                           "-vf", f"scale={W}:-2", "-f", "image2pipe", "-vcodec", "png", "-"],
                          capture_output=True, check=True).stdout
     return Image.open(io.BytesIO(out)).convert("RGB")

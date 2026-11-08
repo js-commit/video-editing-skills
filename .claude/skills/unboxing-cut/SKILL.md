@@ -15,8 +15,8 @@ beat is searchable alone and the sequence plays back from the index order.
 ## The editorial rules
 
 - **Show the box first.** Then the opening, kept for its **sound**: the knife on the tape,
-  tearing a seal, shrink wrap, peeling film, a lid sliding off. It's an ASMR kind of thing,
-  fast paced but balanced, not too rapid.
+  tearing a seal, shrink wrap, peeling film, a lid sliding off. The goal is an ASMR-style
+  pace: brisk, but never rushed.
 - **Pause on every product** as it comes out. If the hands turn it side to side, keep that
   motion for a bit.
 - **Cut the dead time:** moving stuff away, an empty frame, nothing happening.

@@ -60,9 +60,13 @@ def main():
     by_label = {m.get("label"): m for m in spec["moments"]}
     seq_name = a.sequence or f'{spec.get("kind", "unboxing")}: {spec.get("product") or spec.get("name")}'
     slug = C.slugify(a.slug)
-    root = C.root_or_exit(create=True)
+    lib = C.settings.get_path("paths.broll_library_dir") if a.dry_run else None
+    if lib and not lib.is_dir() and lib.parent.is_dir():   # a dry run creates nothing: the real run makes the folder
+        root = lib
+        print(f"(the library folder {lib} does not exist yet; the real run creates it)")
+    else:
+        root = C.root_or_exit(create=not a.dry_run)
     out_dir = root / "footage" / slug
-    sheet_dir = C.catalog_dir(root) / "sheets"
     fade = plan["pace_profile"]["fade"]
     h = 2160 if a.res == 2160 else 1080
 
@@ -85,6 +89,7 @@ def main():
         return 0
 
     out_dir.mkdir(parents=True, exist_ok=True)
+    sheet_dir = C.catalog_dir(root) / "sheets"
     with C.Lock(root, "unboxing-cut export"):
         data = C.load_catalog(root)
         for i, b, src, fps, n, s_in, s_out, out, desc, tags in rows:
@@ -122,8 +127,9 @@ def main():
             rec["sequence_meta"] = {"pace": plan["pace"], "beat": i + 1, "beats": len(plan["beats"]), "kind": b["kind"],
                                     "label": b["label"], "section": b["section"], "hero": bool(b.get("hero")),
                                     "flip": src.flip, "speech": src.speech, "moments_file": plan["moments_file"]}
-            if old:   # the range is the same: replace the record wholesale (the clip was re-cut or kept)
-                data["clips"] = [c for c in data["clips"] if c["id"] != rec_id]
+            # one record per clip file: the same range replaces its record wholesale (the clip was re-cut or kept),
+            # and a changed range drops the old record that pointed at this file (ffmpeg just overwrote it)
+            data["clips"] = [c for c in data["clips"] if c["id"] != rec_id and c.get("path") != rec["path"]]
             data["clips"].append(rec)
         C.save_catalog(root, data)
     print(json.dumps({"clips": len(rows), "folder": str(out_dir), "sequence": seq_name,

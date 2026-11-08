@@ -59,7 +59,7 @@ def stabilize_cuts(p: Path, job: dict) -> list:
             res = hv.load_json(side)
         else:
             hv.log(f"stabilize cut {c['i']} ({Path(src).name} {a:.2f}-{b:.2f})")
-            r = subprocess.run([sys.executable, "-B", str(STABILIZE), src, "-o", str(out), "--range", str(a), str(b), "--force"],
+            r = subprocess.run([sys.executable, "-B", str(STABILIZE), src, "-o", str(out), "--range", str(a), str(b), "--force", "--replace"],
                                capture_output=True, text=True)
             line = (r.stdout.strip().splitlines() or ["{}"])[-1]
             try:

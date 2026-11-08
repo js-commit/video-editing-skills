@@ -25,7 +25,8 @@ gain, zoom, source and source_in_s (where OUT starts in the source, for cut list
 
 Flags worth knowing: --force stabilizes a clip the score calls smooth (the user saw shake);
 --keep-all keeps a render the gate would revert (for a side-by-side look);
---engine deshake uses ffmpeg's built-in deshake when vid.stab is missing (weaker, unmeasured).
+--engine deshake uses ffmpeg's built-in deshake when vid.stab is missing (weaker, unmeasured);
+--replace overwrites an existing OUT (without it an existing OUT is an error; the source never is).
 
 Exit codes: 0 ok (including skip/reverted), 1 failure, 2 usage.
 """
@@ -308,6 +309,7 @@ def main() -> int:
     ap.add_argument("--detect-width", type=int, default=1920, help="analysis copy width (default 1920; motion is scaled back up)")
     ap.add_argument("--force", action="store_true", help="stabilize even when the clip measures smooth")
     ap.add_argument("--keep-all", action="store_true", help="keep the render even when the gate would revert it")
+    ap.add_argument("--replace", action="store_true", help="overwrite an existing output file (never the source)")
     ap.add_argument("--engine", choices=("vidstab", "deshake"), default="vidstab")
     args = ap.parse_args()
 
@@ -339,10 +341,15 @@ def main() -> int:
             bad += 1
             continue
         out = None if args.analyze else str(Path(args.out).expanduser().resolve()) if args.out else default_out(src, rng, args.out_dir)
-        try:
-            res = stabilize_one(str(Path(src).resolve()), out, rng, args)
-        except RuntimeError as e:
-            res = {"status": "error", "source": src, "reason": str(e)}
+        if out and Path(out).resolve() == Path(src).resolve():
+            res = {"status": "error", "source": src, "reason": "the output is the source file: refusing to overwrite the original"}
+        elif out and Path(out).exists() and not args.replace:
+            res = {"status": "error", "source": src, "reason": f"{out} already exists: pass --replace to overwrite it, or pick another -o"}
+        else:
+            try:
+                res = stabilize_one(str(Path(src).resolve()), out, rng, args)
+            except RuntimeError as e:
+                res = {"status": "error", "source": src, "reason": str(e)}
         bad += res["status"] == "error"
         print(json.dumps(res), flush=True)
         log(f"{Path(src).name}: {res['status']} - {res.get('reason', '')}")

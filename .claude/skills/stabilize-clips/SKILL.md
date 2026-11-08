@@ -1,7 +1,7 @@
 ---
 name: stabilize-clips
 description: Smooth shaky handheld clips with ffmpeg's vid.stab (two passes) inside a small crop budget, measure whether it actually helped, and keep the original when it did not. Works on whole clips, one stretch of a clip, or the shots of a home-video montage marked as shaky. Use when asked to "stabilize this", "this clip is shaky", "smooth out the footage", "which of these clips are shaky?", "deshake", or when a montage note says a shot is shaky.
-allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/*), Bash(python3 ${CLAUDE_SKILL_DIR}/../*/scripts/*), Bash(python3 ${CLAUDE_SKILL_DIR}/../../../tools/*), Bash(ffmpeg *), Bash(ffprobe *), Read
+allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/*), Bash(python3 ${CLAUDE_SKILL_DIR}/../../../tools/*), Bash(ffmpeg *), Bash(ffprobe *), Read
 ---
 
 # Stabilize clips
@@ -62,7 +62,8 @@ python3 $S clip.mp4 -o shot.mp4 --range 12.0 17.5     # one stretch (+0.5 s hand
 
 ## Hard rules
 
-- Sources are never touched: outputs go to `-o`, `--out-dir`, or `<clip dir>/stabilized/`.
+- Sources are never touched: outputs go to `-o`, `--out-dir`, or `<clip dir>/stabilized/`. An
+  existing output is refused unless you pass `--replace` (after the user's yes).
 - Install nothing without the user's yes.
 
 ## What the user can customize

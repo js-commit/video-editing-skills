@@ -15,7 +15,7 @@ a-roll") under `## voice-clear` in `user/preferences.md` counts as asking.
 
 `python3 ${CLAUDE_SKILL_DIR}/scripts/voice_clear.py --help` lists everything. The Clear SDK runs
 through a small Swift wrapper (`scripts/clearlab`, pinned to desert-ant-core 3.5.0) compiled into
-`scripts/bin/clearlab`: a standalone ~1.5 MB arm64 program, committed, so nothing builds on a
+`scripts/bin/clearlab`: a small standalone arm64 program, committed, so nothing builds on a
 normal run; it is signed and notarized. It changes only when the wrapper or the SDK version does:
 then `voice_clear.py build` (about 15 s; needs `swift` from Xcode or the Command Line Tools). The
 model weights (9 MB) download once into `~/Library/Caches/desert-ant-models`. The SDK sends

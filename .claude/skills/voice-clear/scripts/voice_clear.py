@@ -52,7 +52,7 @@ sys.path.insert(0, str(REPO / "tools"))
 from vidkit import media, settings  # noqa: E402
 
 PKG = HERE / "clearlab"
-BIN = HERE / "bin" / "clearlab"                        # committed: a standalone ~1.5 MB arm64 program
+BIN = HERE / "bin" / "clearlab"                        # committed: a small standalone arm64 program
 PKG_SDK = "3.5.0"                                      # keep in step with clearlab/Package.swift
 SR = 48000
 VARIANTS = ("studio", "natural")

@@ -156,7 +156,7 @@ struct ContentView: View {
             Text("Ranges always win over the Trash. To drop this, its ranges have to go first.")
         }
         .sheet(isPresented: $model.showShortcuts) { ShortcutsView(keymap: model.keymap) }
-        .navigationTitle(model.folder?.lastPathComponent ?? "Bulk Cut")
+        .navigationTitle(model.folder?.lastPathComponent ?? "BulkCut")
         .navigationSubtitle(model.folder.map { $0.deletingLastPathComponent().path } ?? "")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -168,17 +168,17 @@ struct ContentView: View {
                     .help("Finish the review (⌘⏎): it is saved to \(Manifest.reviewFileName) after every change. "
                           + "Nothing in this folder is deleted.")
                 } else {
-                Button { model.openApply() } label: {
-                    if model.applying {
-                        Label { Text("Applying…") } icon: { ProgressView().controlSize(.small) }
-                            .labelStyle(.titleAndIcon)
-                    } else {
-                        Label(applyLabel, systemImage: "checkmark.circle")
-                            .labelStyle(.titleAndIcon)
+                    Button { model.openApply() } label: {
+                        if model.applying {
+                            Label { Text("Applying…") } icon: { ProgressView().controlSize(.small) }
+                                .labelStyle(.titleAndIcon)
+                        } else {
+                            Label(applyLabel, systemImage: "checkmark.circle")
+                                .labelStyle(.titleAndIcon)
+                        }
                     }
-                }
-                .disabled(!model.hasChanges || model.applying)
-                .help("Review, then trash, crop, rotate and zoom everything staged (⌘⏎). ⌘S applies it at once.")
+                    .disabled(!model.hasChanges || model.applying)
+                    .help("Review, then trash, crop, rotate and zoom everything staged (⌘⏎). ⌘S applies it at once.")
                 }
             }
         }

@@ -1,7 +1,7 @@
 import Foundation
 
 /// `bulkcut.json`: what a tool (a Claude Code skill, a script) put next to a
-/// folder of clips for the user to look at in Bulk Cut. Optional: without it
+/// folder of clips for the user to look at in BulkCut. Optional: without it
 /// the app is a plain triage tool. The format is documented in SPEC.md.
 ///
 /// - Notes per file (a description, why it was picked, a privacy warning,

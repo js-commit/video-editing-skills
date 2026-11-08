@@ -355,7 +355,8 @@ enum Exporter {
     /// A zoom: the picture (turned, if staged) cropped to the area and
     /// re-encoded at the highest quality in the source's own codec family —
     /// HEVC (an HDR clip stays HDR), ProRes, or H.264 for anything else.
-    /// AAC audio passes through. Checked by reading the result back.
+    /// The preset decides the audio too (the ProRes ones write LPCM). Checked
+    /// by reading the result back.
     static func reencode(_ src: URL, range r: KeepRange?, turns: Int, zoom: ZoomRect, to dst: URL,
                          as type: AVFileType, fraction: @escaping @MainActor (Double) -> Void) async throws {
         let asset = AVURLAsset(url: src, options: [AVURLAssetPreferPreciseDurationAndTimingKey: true])

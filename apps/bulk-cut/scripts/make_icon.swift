@@ -1,6 +1,7 @@
 // Draws the BulkCut app icon into an .iconset folder (build.sh turns it into
-// AppIcon.icns with iconutil). No image files are kept in the repo: the icon
-// is drawn here, at build time, with AppKit / Core Graphics only.
+// AppIcon.icns with iconutil). The repo keeps no icon image source (only the
+// signed copy in prebuilt/ carries the built .icns): the icon is drawn here,
+// at build time, with AppKit / Core Graphics only.
 //
 //   swiftc -O scripts/make_icon.swift -o build/make_icon
 //   build/make_icon build/AppIcon.iconset

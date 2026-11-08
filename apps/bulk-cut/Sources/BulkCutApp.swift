@@ -30,7 +30,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             guard Self.model?.window == nil,
                   !NSApp.windows.contains(where: { $0.isVisible && $0.canBecomeMain }),
-                  let item = NSApp.windowsMenu?.items.first(where: { $0.title == "Bulk Cut" }),
+                  let item = NSApp.windowsMenu?.items.first(where: { $0.title == "BulkCut" }),
                   let action = item.action else { return }
             NSApp.sendAction(action, to: item.target, from: item)
         }
@@ -43,7 +43,7 @@ struct BulkCutApp: App {
     @StateObject private var model = AppModel()
 
     var body: some Scene {
-        Window("Bulk Cut", id: "main") {
+        Window("BulkCut", id: "main") {
             ContentView(model: model)
                 .onAppear {
                     AppDelegate.model = model

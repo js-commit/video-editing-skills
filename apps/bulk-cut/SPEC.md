@@ -65,10 +65,17 @@ Every field is optional except `files`.
   a normal folder; the notes show and the proposals are staged as ordinary
   keep ranges, which the user's Apply would crop to (after the review sheet).
 - `send`: in review mode, the toolbar button's label and the command it runs
-  after saving (argv, first item an absolute path; it runs with the user's
-  environment plus `/opt/homebrew/bin` and `/usr/local/bin` on `PATH`; its
-  output streams into the sheet). `steps` are shown before it runs. Without
-  `send`, the button is "Done" and only saves.
+  after saving (argv, first item an absolute path; any other first item is
+  refused, not run; it runs with the user's environment plus
+  `/opt/homebrew/bin` and `/usr/local/bin` on `PATH`; its output streams into
+  the sheet). The sheet shows `steps` and the whole command before it runs,
+  and only a click on its button runs it (it is not the sheet's default
+  button: Return and ⌘⏎ don't). Without `send`, the button is "Done" and only
+  saves.
+- Trust: BulkCut runs `send.command` as the user, whatever it names, so a
+  `bulkcut.json` is as trusted as a script. A tool should only write one into
+  a folder it made itself, and tell the user to click Send only in review
+  folders their own tools made.
 - `legend`: what the colours are called in this folder.
 - Per file:
   - `kept: false` starts the file "not kept" (staged for delete; in review
@@ -79,9 +86,9 @@ Every field is optional except `files`.
     drawn on the range.
   - `library`: stretches a library already holds, drawn orange and read
     only; sections-only playback still plays them.
-  - `description`, `by`, `tags`, `why`, `privacy`, `context`, `origin`,
-    `speed`, `segments`: shown in the notes panel (⌘I) and the clip list
-    (`privacy` as an orange flag). Read only.
+  - `description`, `by`, `tags`, `quality` (a string or a list), `why`,
+    `privacy`, `context`, `origin`, `speed`, `segments`: shown in the notes
+    panel (⌘I) and the clip list (`privacy` as an orange flag). Read only.
 - `sequences`: for the focus filter (F) and the review sheet. A beat's `file`
   is a name in `files`.
 
@@ -146,9 +153,9 @@ python3 apps/bulk-cut/scripts/bulkcut.py where         # exit 2: app missing
 absolute `source` and an optional `name`; `stage` links them into `DIR`, keys
 the manifest by name, maps sequence beats given by source path to names and
 skips formats BulkCut cannot open (listed under `skipped`). `read` prints one
-row per file: `name`, `source`, `deleted`, `kept` (has ranges and not
-deleted), `ranges`, `turns`, `zoom` and the original `proposed` ranges, to
-compare.
+row per file: `name`, `source`, `kind` (`"video"` or `"photo"`), `deleted`,
+`kept` (has ranges and not deleted), `ranges`, `turns`, `zoom` and the
+original `proposed` ranges, to compare.
 
 ## Recipe: shots to check
 

@@ -27,7 +27,7 @@ enum DebugLog {
             var text = ""
             if !launched {
                 launched = true
-                text += "\n=== \(t)  Bulk Cut launched (pid \(getpid())) ===\n"
+                text += "\n=== \(t)  BulkCut launched (pid \(getpid())) ===\n"
             }
             text += "\(t.dropFirst(11))  \(line)\n"
             let file = dir.appendingPathComponent(String(t.prefix(10)) + ".log")

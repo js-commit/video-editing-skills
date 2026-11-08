@@ -98,6 +98,12 @@ final class SendRun: ObservableObject {
         lines = []
         exit = nil
         running = true
+        // SPEC.md: the first item is an absolute path. Anything else is not run.
+        guard exe.hasPrefix("/") else {
+            append("Not run: the command's first item must be an absolute path to a program (\(Manifest.fileName), send.command).\n")
+            finish(-1)
+            return
+        }
         let p = Process()
         p.executableURL = URL(fileURLWithPath: exe)
         p.arguments = Array(command.dropFirst())
@@ -200,10 +206,24 @@ struct SendSheet: View {
             .font(.callout)
 
             if let cmd = review?.send?.command {
-                Text(cmd.map { $0.contains(" ") ? "\"\($0)\"" : $0 }.joined(separator: " "))
-                    .font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary)
-                    .textSelection(.enabled).lineLimit(3).truncationMode(.middle)
-                    .help("The command Send runs (from \(Manifest.fileName))")
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("\(review?.send?.label ?? "Send") runs this program, named in this folder's \(Manifest.fileName). "
+                         + "Only click it in a review folder your own tools made.")
+                        .font(.system(size: 11)).foregroundStyle(.orange)
+                        .fixedSize(horizontal: false, vertical: true)
+                    // All of it, wrapped; a long one scrolls. Nothing is cut off.
+                    ScrollView {
+                        Text(cmd.map { $0.contains(" ") ? "\"\($0)\"" : $0 }.joined(separator: " "))
+                            .font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary)
+                            .textSelection(.enabled)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .frame(height: 64)
+                    .padding(6)
+                    .background(Color.black.opacity(0.15), in: RoundedRectangle(cornerRadius: 6))
+                    .help("The command \(review?.send?.label ?? "Send") runs (from \(Manifest.fileName))")
+                }
             }
 
             if !run.lines.isEmpty {
@@ -245,7 +265,7 @@ struct SendSheet: View {
                                 Text("\(send.label) (\(total) clip\(total == 1 ? "" : "s"))")
                             }
                         }
-                        .keyboardShortcut(.defaultAction)
+                        // Not the default button: it runs a program, so only a click does it (no Return).
                         .disabled(run.running)
                     } else {
                         Button("Done") {

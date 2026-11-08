@@ -1,5 +1,10 @@
 import AVFoundation
 import Foundation
+import os
+
+/// At debug level (not kept by default), like the key log in AppModel.swift:
+/// `/usr/bin/log stream --level debug --predicate 'subsystem == "<bundle ID>"'`.
+private let waveLog = Logger(subsystem: bundleID, category: "waveform")
 
 /// Audio peaks for the timeline: one 0…1 value per `bucket` seconds of the
 /// file's first audio track (max |sample| across channels). Built in the
@@ -20,7 +25,7 @@ final class WaveformModel: ObservableObject {
     /// last chunk on the way out, and that must not land in the next clip's peaks.
     private var generation = 0
     nonisolated private static func log(_ m: String) {
-        FileHandle.standardError.write(("bulk-cut: waveform: " + m + "\n").data(using: .utf8)!)
+        waveLog.debug("\(m, privacy: .public)")
     }
     private var cacheURL: URL?
     /// What `build()` reads, set by a load() that missed the cache.

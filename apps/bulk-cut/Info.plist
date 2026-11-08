@@ -7,8 +7,8 @@
 	<key>CFBundleIconFile</key><string>AppIcon</string>
 	<key>CFBundleIdentifier</key><string>io.github.js-commit.bulk-cut</string>
 	<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
-	<key>CFBundleName</key><string>Bulk Cut</string>
-	<key>CFBundleDisplayName</key><string>Bulk Cut</string>
+	<key>CFBundleName</key><string>BulkCut</string>
+	<key>CFBundleDisplayName</key><string>BulkCut</string>
 	<key>CFBundlePackageType</key><string>APPL</string>
 	<key>CFBundleShortVersionString</key><string>1.0</string>
 	<key>CFBundleVersion</key><string>1</string>

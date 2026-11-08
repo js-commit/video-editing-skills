@@ -29,7 +29,7 @@ for arg in "$@"; do
     --debug) OPT=(-Onone -g) ;;
     --install) INSTALL=1 ;;
     --portable) PORTABLE=1 ;;
-    -h|--help) sed -n '2,15p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,16p' "$0"; exit 0 ;;
     *) echo "usage: $0 [--debug] [--install] [--portable]" >&2; exit 2 ;;
   esac
 done
@@ -56,7 +56,8 @@ lipo -create "${SLICES[@]}" -output "$APP/Contents/MacOS/BulkCut"
 (( PORTABLE )) && strip -S -x "$APP/Contents/MacOS/BulkCut"
 cp Info.plist "$APP/Contents/Info.plist"
 
-# The icon is drawn at build time (scripts/make_icon.swift); no image files in the repo.
+# The icon is drawn at build time (scripts/make_icon.swift); the repo keeps no
+# icon image source (only the signed copy in prebuilt/ carries the built .icns).
 ICONSET=$BUILD/AppIcon.iconset
 if swiftc -O scripts/make_icon.swift -o "$BUILD/make_icon" 2>/dev/null \
    && "$BUILD/make_icon" "$ICONSET" >/dev/null \

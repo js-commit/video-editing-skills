@@ -5,7 +5,8 @@ photos from the keyboard. Go down the clips, trash the duds, crop the rest to
 the parts worth keeping, turn sideways or upside-down ones the right way up,
 zoom into the part of the picture that matters. Photos the same: trash them,
 turn them 90° at a time, crop them. Then one Apply (⌘⏎, or ⌘S at once) does it
-all, with no re-encoding except for zooms and photo crops.
+all, with no re-encoding except for zooms, photo crops and turning a PNG, GIF,
+BMP or AVIF (PNG stays lossless).
 
 It replaces "Finder at big icon size, Quick Look each clip, drag the duds to
 the Trash, open the rest in an editor to trim."
@@ -264,9 +265,14 @@ folder with a `bulkcut.json` in review mode. Opening it:
   and skipped. Show All goes back.
 - **Nothing in a review folder is trashed or trimmed.** Every change is saved
   to `bulkcut-review.json` in the folder as you go; the skill reads that.
-  The toolbar button (⌘⏎) shows a summary and runs the skill's own command
-  if it named one (the sheet shows the exact command first), or just says
-  you are done.
+  The toolbar button (⌘⏎) shows a summary and, if the skill named a command,
+  the whole command and a button that runs it; otherwise it just says you
+  are done. Only a click on that button runs the command (Return and ⌘⏎
+  don't).
+- **Trust:** that command comes from the folder's `bulkcut.json`, and BulkCut
+  runs whatever program it names, as you. Only click the button in review
+  folders your own skills or scripts made; in one from anywhere else, read
+  the command in the sheet before you do.
 
 The formats: [SPEC.md](SPEC.md). The helper script:
 `scripts/bulkcut.py` (`stage`, `read`, `open`).
@@ -282,8 +288,9 @@ The formats: [SPEC.md](SPEC.md). The helper script:
   `$TMPDIR/BulkCut/<date>.log`, one file a day (Help > Show Debug Log).
 - Waveforms and poster frames are cached in `~/Library/Caches/<bundle id>/`;
   folders unused for 90 days are pruned.
-- `Sources/Waveform.swift`, `Timecode.swift` and `MediaCache.swift` are shared
-  with `apps/edit-review`.
+- `Sources/Timecode.swift` is the same file as in `apps/edit-review`;
+  `Waveform.swift` and `MediaCache.swift` started as edit-review's copies and
+  have changed a little since.
 
 ## Testing hooks
 

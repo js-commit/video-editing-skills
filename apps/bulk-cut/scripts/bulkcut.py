@@ -185,8 +185,9 @@ def read_review(folder: Path) -> dict | None:
 def find_app() -> Path | None:
     env = os.environ.get("BULKCUT_APP")
     candidates = [Path(env).expanduser()] if env else []
-    candidates += [Path.home() / "Applications" / "BulkCut.app", Path("/Applications/BulkCut.app"),
-                   APP_DIR / "build" / "BulkCut.app", APP_DIR / "prebuilt" / "BulkCut.app"]
+    # Your own build/ first (as build.sh says), then an installed copy, then the signed one in the repo.
+    candidates += [APP_DIR / "build" / "BulkCut.app", Path.home() / "Applications" / "BulkCut.app",
+                   Path("/Applications/BulkCut.app"), APP_DIR / "prebuilt" / "BulkCut.app"]
     for c in candidates:
         if (c / "Contents" / "MacOS" / "BulkCut").exists():
             return c

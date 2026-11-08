@@ -939,7 +939,7 @@ final class AppModel: ObservableObject {
     }
 
     /// A photo that can be turned and cropped (its header read, a format
-    /// Bulk Cut can write), or the video in the player.
+    /// BulkCut can write), or the video in the player.
     private func pictureTarget(_ target: Clip? = nil) -> Clip? {
         guard let clip = target ?? selected else { return nil }
         guard clip.isPhoto else { return target ?? cropTarget() }
@@ -954,7 +954,7 @@ final class AppModel: ObservableObject {
         let all = targets ?? selection
         guard !all.isEmpty else { return }
         if targets != nil { DebugLog.write("List menu → Rotate \(k > 0 ? "Right" : "Left") 90°") }
-        // A photo needs its header read and a format Bulk Cut can write.
+        // A photo needs its header read and a format BulkCut can write.
         let list = all.count == 1 ? [pictureTarget(all[0])].compactMap { $0 }
                                   : all.filter { !$0.isPhoto || photoInfos[$0.url]?.editable == true }
         guard !list.isEmpty else {

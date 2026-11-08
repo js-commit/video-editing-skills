@@ -36,6 +36,8 @@ PICKER = "salvage picker"
 
 def load_work(work: Path):
     """batches.json, every info.json by camera file, and the picks by camera file."""
+    if not (work / "batches.json").is_file():
+        bulkcut.die(f"{work} is not a salvage work folder (no batches.json): run salvage.py prep first")
     b = bulkcut.load_json(work / "batches.json")
     infos, batch_of = {}, {}
     for x in b["batches"]:

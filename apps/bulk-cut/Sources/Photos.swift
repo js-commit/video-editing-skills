@@ -21,7 +21,7 @@ struct PhotoInfo: Equatable, Sendable {
     var editable: Bool { frames == 1 && Photos.writable.contains(type) }
     /// Why `editable` is false, for the status line.
     var notEditable: String {
-        frames > 1 ? "an animated \(format)" : "a \(format) (Bulk Cut can't write \(format) files)"
+        frames > 1 ? "an animated \(format)" : "a \(format) (BulkCut can't write \(format) files)"
     }
     /// A turn alone only rewrites the orientation tag: no pixel is decoded.
     /// PNG has the tag too, but few apps read it, so a PNG is redrawn

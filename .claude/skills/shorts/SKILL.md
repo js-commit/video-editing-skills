@@ -1,6 +1,6 @@
 ---
 name: shorts
-description: Cut vertical YouTube Shorts (9:16, 1080x1920 by default, 2160x3840 for 4K) out of a finished long-form video - an agent proposes word-precise cut lists with a hook in the first 2 seconds, the user picks, a framing agent reframes every shot (crop on the subject, fit over a blurred backdrop, face-over-subject stacks, b-roll swaps) so the face-only time stays low, ffmpeg renders it with burned-in word-by-word captions, a measured QC checks length, loudness and the Shorts safe zones, and it uploads only on the user's go. DaVinci Resolve Studio users can get the short as an editable vertical timeline instead. Use for "make shorts from this video", "cut a short / a TikTok / a Reel", "vertical version of my video", "highlights for Shorts", "shorts from my Resolve edit", and for notes on a short this skill made.
+description: Cut vertical YouTube Shorts (9:16, 1080x1920 by default, 2160x3840 for 4K) out of a finished long-form video - an agent proposes word-precise cut lists with a hook in the first 2 seconds, the user picks, a framing agent reframes every shot (crop on the subject, fit over a blurred backdrop, face-over-subject stacks, b-roll swaps) so the face-only time stays low, ffmpeg renders it with burned-in word-by-word captions, a measured QC checks length, loudness and the Shorts safe zones, and it hands over the title and description for the user to upload in YouTube Studio. DaVinci Resolve Studio users can get the short as an editable vertical timeline instead. Use for "make shorts from this video", "cut a short / a TikTok / a Reel", "vertical version of my video", "highlights for Shorts", "shorts from my Resolve edit", and for notes on a short this skill made.
 argument-hint: "<finished long-form video> [how many shorts, topic, 4K]"
 ---
 
@@ -44,8 +44,9 @@ Scripts live in `${CLAUDE_SKILL_DIR}/scripts/` (call it `K`). Every script has `
    path, the work folder, how many shorts (default 3, or preferences), the topic
    if the user named one, and the burned passages. It writes
    `<work>/proposals.json` and runs `proposals.py check` until it passes. If the
-   agent type is not available, use a general-purpose agent with model opus and
-   paste `.claude/agents/shorts-scout.md` into its prompt.
+   agent type is not available, use a general-purpose agent with the model named
+   in the frontmatter of `.claude/agents/shorts-scout.md` and paste that file
+   into its prompt.
 
 3. **The user picks.** Show a table (slug, seconds, hook words, title, angle) and
    the prose of each (`python3 $K/proposals.py text <work>/proposals.json`): the
@@ -66,7 +67,8 @@ Scripts live in `${CLAUDE_SKILL_DIR}/scripts/` (call it `K`). Every script has `
 6. **Framing.** Spawn the `shorts-framing-director` agent with the spec paths, the
    master, the transcript, the work folder and the b-roll candidates. It writes
    each shot's framing into the specs, renders, runs QC and leaves
-   `<work>/framing-plan.json`. (Fallback as in step 2, model sonnet.)
+   `<work>/framing-plan.json`. (Fallback as in step 2, with
+   `.claude/agents/shorts-framing-director.md`.)
 
 7. **Render and QC** (the director already did; re-run after any change):
    ```
@@ -142,9 +144,11 @@ shuttle). Render with `resolve_short.py render` or by hand on the Deliver page
 
 ## Hard rules
 
-- Nothing is uploaded or published without the user's explicit go for that short.
+- Nothing here uploads or publishes: the user uploads each short in YouTube Studio.
 - Never overwrite the long-form or any source media; renders go to the drafts
-  folder. The Resolve script only creates timelines whose name starts with "short".
+  folder. The Resolve script only creates timelines whose name starts with "short",
+  and replaces an existing one only with `--replace` (ask the user first: their
+  hand edits on it are lost).
 - Confirm the list of shorts with the user before rendering.
 
 ## What the user can customize

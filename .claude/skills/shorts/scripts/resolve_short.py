@@ -4,7 +4,7 @@ project, from the long-form timeline's own clips (needs DaVinci Resolve Studio:
 the free version blocks external scripting).
 
     resolve_short.py snapshot SPEC --project P                      # .drp backup first (do this once per session)
-    resolve_short.py create   SPEC --project P --long-timeline "Main edit" [--name "short - my-slug"] [--dry-run | --prepare-only]
+    resolve_short.py create   SPEC --project P --long-timeline "Main edit" [--name "short - my-slug"] [--replace] [--dry-run | --prepare-only]
     resolve_short.py stills   SPEC --project P --name "short - my-slug" 1.0 8.5 20
     resolve_short.py render   SPEC --project P --name "short - my-slug" [--out-dir DIR]
 
@@ -20,7 +20,9 @@ shot's dimmed backdrop), V2 = a stack's top pane / a fit shot's picture, V3 = th
 captions (a transparent ProRes 4444 clip rendered by make_short.py), A1 = the
 cut, loudness-matched audio (a WAV rendered by make_short.py, waveform-safe cuts
 and fades included). Existing timelines are never touched: this script only
-creates or replaces timelines whose name starts with "short".
+creates timelines whose name starts with "short", and refuses a name that already
+exists unless --replace is passed (which deletes that "short..." timeline and any
+hand edits on it, so snapshot first).
 
 Not copied from the long-form: per-clip transforms, speed changes and the
 grades on its timeline items. Check the stills.
@@ -260,6 +262,11 @@ def cmd_create(a, spec):
         return 0
 
     resolve, pm, proj = connect_project(a.project)
+    # an existing timeline of the same name only goes with --replace (checked before any import)
+    old = next((t for t in vr.timelines(proj) if t.GetName() == name), None)
+    if old and not a.replace and not a.dry_run:
+        sl.die(f"a timeline named {name!r} already exists (Resolve was not changed): pass --replace to delete "
+               "and rebuild it (hand edits on it are lost; run snapshot first), or --name with a new name", 2)
     mp = proj.GetMediaPool()
     long_tl = timeline_by_name(proj, a.long_timeline)
     tl_fps = float(vr.parse_fps(long_tl.GetSetting("timelineFrameRate")))
@@ -314,11 +321,11 @@ def cmd_create(a, spec):
     report = [{k: v for k, v in j.items() if k != "mpi"} for j in jobs]
     (work / f"{spec.get('slug', 'short')}.resolve-job.json").write_text(json.dumps(report, indent=2))
     if a.dry_run:
-        print(json.dumps({"timeline": name, "fps": tl_fps, "placements": report}, indent=2))
+        print(json.dumps({"timeline": name, "timeline_exists": bool(old), "fps": tl_fps, "placements": report},
+                         indent=2))
         return 0
 
-    # the new timeline (replacing an older "short..." of the same name)
-    old = next((t for t in vr.timelines(proj) if t.GetName() == name), None)
+    # the new timeline (with --replace, the older "short..." of the same name goes first)
     if old:
         guard_name(old.GetName())
         if not mp.DeleteTimelines([old]):
@@ -450,6 +457,8 @@ def main():
         if n == "create":
             p.add_argument("--long-timeline", required=True, help="the long-form timeline the master was rendered from")
             p.add_argument("--name", help="new timeline name (must start with 'short')")
+            p.add_argument("--replace", action="store_true",
+                           help="delete and rebuild an existing timeline of that name (its hand edits are lost)")
             p.add_argument("--offset", type=float, default=0.0,
                            help="seconds into the long-form timeline where the master render starts")
             p.add_argument("--dry-run", action="store_true", help="map and print the placements, change nothing")

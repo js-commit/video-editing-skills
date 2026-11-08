@@ -28,7 +28,8 @@ leaves out). Every number or claim must be traceable to one of them.
 2. A link to the full video once it is public (the point of making Shorts).
 3. Links only to things that appear in this short. If any link earns the user
    money (affiliate, sponsor), say so right after the links: it is a legal duty
-   in many countries, and `check_metadata.py` refuses a plan without it.
+   in many countries, and `check_metadata.py` flags a description without it
+   as an error.
 4. Up to 3 hashtags, one of them `#shorts` (optional: a video is a Short because
    it is vertical or square and at most 3 minutes, not because of the tag).
 

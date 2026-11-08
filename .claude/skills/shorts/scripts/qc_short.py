@@ -149,7 +149,7 @@ def main():
         errors.append(f"loudness {m['lufs']} LUFS, target {a.lufs} (set \"lufs\" in the spec and re-render)")
     elif abs(m["lufs"] - a.lufs) > 1:
         warnings.append(f"loudness {m['lufs']} LUFS, target {a.lufs}")
-    if m["true_peak_dbtp"] is not None and m["true_peak_dbtp"] > -0.5:
+    if m["true_peak_dbtp"] is not None and m["true_peak_dbtp"] > -1.0:
         warnings.append(f"true peak {m['true_peak_dbtp']} dBTP; keep it at or below -1")
     blacks = [(float(x), float(y)) for x, y in re.findall(r"black_start:([\d.]+) black_end:([\d.]+)", log)]
     m["black"] = blacks

@@ -36,9 +36,11 @@ the Edit page, Transform and Cropping sections).
    before the first `create`).
 3. `create --dry-run` maps and prints every placement without changing
    anything; check that each piece found a clip (`clip`, `src_frame`).
-4. `create` builds the timeline (it replaces an older timeline of the same name,
-   and refuses any name not starting with "short"). Its last line compares the
-   audio length with the picture: `MISMATCH` means re-check the spec, not trim.
+4. `create` builds the timeline (it refuses any name not starting with "short",
+   and a name that already exists unless you pass `--replace`, which deletes
+   that timeline and any hand edits on it: snapshot first). Its last line
+   compares the audio length with the picture: `MISMATCH` means re-check the
+   spec, not trim.
 5. `stills` exports the exact rendered frame at given seconds (it switches to the
    Edit page and back, and waits for the viewer to catch up before exporting).
    Read them in order, the hook first.
@@ -55,9 +57,9 @@ touching Resolve (useful while the user is mid-edit).
 
 ## Known limits (the scripting API, Resolve 19-21)
 
-- No trim/slip setters on timeline items: every change is a rebuild (`create`
-  again). That is cheap; edit the spec, not the timeline, until the structure is
-  right, then polish by hand.
+- No trim/slip setters on timeline items: every change is a rebuild (`create
+  --replace`). That is cheap; edit the spec, not the timeline, until the
+  structure is right, then polish by hand (a later `--replace` would undo it).
 - A file re-rendered at the same path keeps its OLD length and picture in the
   media pool, silently. The script names the audio and caption files after the
   spec's content hash, so a changed spec always imports fresh files.

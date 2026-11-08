@@ -1,7 +1,7 @@
 ---
 name: aroll-draft
 description: Raw talking-head take -> first-cut edit with no human in the loop. Transcribes the take once (word-level), has Claude editors cut retakes, false starts, mic checks and filler chunk by chunk, runs a revision pass, snaps every cut to the waveform so no word is clipped, flags hidden retakes and long pauses for review, and delivers a cut list (TimeBolt / Video Haircut format), a revision file, a DaVinci Resolve timeline (built directly in Resolve Studio, or XML/EDL to import) and an optional preview MP4. Works for any spoken language. Use when asked to "draft this a-roll", "make a first cut", "auto-edit this video", "haircut this video" (Video Haircut users), "cut the retakes / silences out of this take", or to turn raw talking-head footage into a rough cut.
-allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/*), Bash(python3 ${CLAUDE_SKILL_DIR}/../*/scripts/*), Bash(python3 ${CLAUDE_SKILL_DIR}/../../../tools/*), Read, Agent
+allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/*), Bash(python3 ${CLAUDE_SKILL_DIR}/../*/scripts/*), Bash(python3 ${CLAUDE_SKILL_DIR}/../../../tools/*), Bash(ffmpeg *), Bash(ffprobe *), Read, Agent
 ---
 
 # A-roll draft
@@ -31,7 +31,7 @@ raw take this skill writes, next to the video:
    (transcription runs about 2-10x faster than real time; the edit a few
    minutes per 10 minutes of footage).
 
-## Steps (in order; every script prints JSON on stdout)
+## Steps (in order; scripts print JSON on stdout unless noted)
 
 1. **Prepare**: `python3 S/prepare.py <video>` probes the take, transcribes it
    once with the default engine (reuses `<stem>.transcript.json`), extracts
@@ -61,7 +61,8 @@ raw take this skill writes, next to the video:
    `hard_seams_unresolved` should be 0; anything else is a review point (it
    lands in the report with its timecode), never something to hide.
 6. **Hidden retakes**: `python3 S/flag_retakes.py <video> --cuts WORK/<stem>.aroll.tb.json --json WORK/retake_flags.json`
-   (exit 2 = there are spans to audition; that is not an error). A transcription
+   (exit 2 = there are spans to audition; that is not an error; it prints a
+   readable report, and the JSON goes to the `--json` file). A transcription
    engine can write a sentence that was read twice in a row ONCE, timed to the
    first (flubbed) read, so the pause and the whole second read hide inside one
    stretched word: invisible to the transcript, the editors and the reviser. The

@@ -45,9 +45,11 @@ What the defaults encode (general lessons, keep them unless the user asks):
 - At every seam keep at most ~0.25 s before the voice starts and ~0.30 s after
   it stops, measured on the voice, not on word times: transcripts often stretch
   a sentence's first word back over the pause before it.
-- More than 2.5 s of air, or a long pause inside a keep, is never cut
+- Silence between transcript words is cut as usual (`--silence-thresh`). But
+  more than 2.5 s of air hidden at a keep's edge (inside a stretched first or
+  last word), or a long quiet run inside a keep, is never trimmed
   automatically: dead air and a silent product shot are indistinguishable to a
-  script. They are review points.
+  script. Long pauses inside a keep are review points.
 
 `render_draft.py --height N` sets the preview's short side (default settings
 `render.draft_height`).

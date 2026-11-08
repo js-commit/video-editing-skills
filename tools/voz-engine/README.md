@@ -10,7 +10,7 @@ leaves so word times never go backwards.
   Mac; the SDK sends Desert Ant Labs a small usage signal (a generated device
   id, a call count, the program and SDK names, and the OS name and major version;
   never audio or text).
-- `tools/bin/voz-engine` is a prebuilt binary, signed and notarized (about 2 MB,
+- `tools/bin/voz-engine` is a prebuilt binary, signed and notarized (about 1.2 MB,
   SDK compiled in), so there is nothing to build.
   The ~470 MB model downloads into `~/Library/Caches/desert-ant-models` the
   first time it runs; after that it works offline.

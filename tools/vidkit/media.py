@@ -4,7 +4,7 @@ probing files, picking a hardware encoder, and hardware decode for HEVC.
 
     from vidkit import media
     info = media.probe("/path/clip.mov")      # duration, fps, width, height, has_video, has_audio, vcodec
-    vargs = media.h264_args(quality="draft")   # ["-c:v", "h264_videotoolbox", "-b:v", "12M"] or libx264 ...
+    vargs = media.h264_args(quality="draft")   # ["-c:v", "h264_videotoolbox", "-b:v", "8M", ...] or libx264 ...
     media.run(["ffmpeg", "-i", clip, ...])     # subprocess.run with HEVC decoded on the GPU where that is faster
 
 Encoder choice (settings render.video_encoder, default "auto"):

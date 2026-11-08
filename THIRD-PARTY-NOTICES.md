@@ -21,6 +21,13 @@ here. Source: https://github.com/Desert-Ant-Labs/desert-ant-core (the Swift
 wrappers in `tools/voz-engine/` and `.claude/skills/voice-clear/scripts/clearlab/`
 are this repository's own, MIT).
 
+## Swift Numerics (swift-numerics 1.1.1)
+
+Compiled into `tools/bin/voz-engine` as a dependency of the Desert Ant Labs SDK.
+Copyright Apple Inc. and the Swift Numerics project authors, under the Apache
+License 2.0 with the Runtime Library Exception
+(https://github.com/apple/swift-numerics/blob/main/LICENSE.txt).
+
 ## Qwen3.5-9B (mlx-community/Qwen3.5-9B-4bit)
 
 Not shipped; `tools/vlm-describe` downloads it from Hugging Face on first use

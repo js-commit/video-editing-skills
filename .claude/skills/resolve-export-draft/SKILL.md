@@ -1,7 +1,7 @@
 ---
 name: resolve-export-draft
 description: Render the DaVinci Resolve timeline being edited to a 1080p H.264 draft MP4 in the project's drafts folder (auto-numbered <project>-draft-N.mp4) for review, entirely from the command line with DaVinci Resolve Studio; with the free version, walks the user through the Deliver page instead. Use when asked to "render a draft", "export the timeline", "make a review copy", "dump the current cut to a file" or "export so I can watch it on my phone". Publishing a release is youtube-release, not this.
-allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/*), Bash(python3 ${CLAUDE_SKILL_DIR}/../*/scripts/*), Bash(python3 ${CLAUDE_SKILL_DIR}/../../../tools/*), Bash(ffprobe *), Read
+allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/*), Bash(python3 ${CLAUDE_SKILL_DIR}/../../../tools/*), Bash(ffprobe *), Read
 ---
 
 # Resolve draft export
@@ -26,7 +26,9 @@ computer.
    - `none`: no Resolve timeline to render; ffmpeg skills render their own
      drafts (aroll-draft, talking-head-ffmpeg).
 3. Resolve must be running with the project open. Never launch, quit or
-   switch projects on the user without asking: they may be mid-edit.
+   switch projects on the user without asking: they may be mid-edit. The
+   script refuses a `--project` other than the open one unless you add
+   `--switch` (only after the user's yes).
 
 ## Steps (Resolve Studio)
 

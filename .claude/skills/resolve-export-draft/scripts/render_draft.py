@@ -2,13 +2,15 @@
 """Render a DaVinci Resolve timeline to a draft H.264 MP4 through the
 scripting API (DaVinci Resolve Studio, running). No Deliver page clicking.
 
-  render_draft.py --list [--project P]          projects, current timeline, all timelines
-  render_draft.py [--project P] [--timeline T]  render -> <project>/<drafts>/<project>-draft-N.mp4
+  render_draft.py --list [--project P --switch] projects, current timeline, all timelines
+  render_draft.py [--project P --switch] [--timeline T]  render -> <project>/<drafts>/<project>-draft-N.mp4
         [--out-dir DIR] [--name NAME] [--height 1080] [--preset NAME]
         [--wait 120] [--preflight-only]
 
 Defaults: the open project and its current timeline (what the user last had
-open). Output folder: the drafts folder (settings project_layout.drafts) of the
+open). A --project other than the open one is refused unless --switch is given
+(opening it closes the user's project: ask first); a --timeline other than the
+open one is opened and noted on stderr. Output folder: the drafts folder (settings project_layout.drafts) of the
 project folder most of the timeline's clips live in; else
 <paths.projects_dir>/<Resolve project name>/<drafts>. N = the first unused
 number. Size: the short side is --height (settings render.draft_height,
@@ -210,6 +212,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--list", action="store_true", help="list projects and timelines, then exit")
     ap.add_argument("--project", help="Resolve project name (default: the open project)")
+    ap.add_argument("--switch", action="store_true",
+                    help="allow --project to open a project other than the open one (closes the user's project: ask first)")
     ap.add_argument("--timeline", help="timeline name (default: the current timeline)")
     ap.add_argument("--out-dir", help="output folder (default: the project's drafts folder)")
     ap.add_argument("--name", help="output file name without extension (default: <project>-draft-N)")
@@ -223,8 +227,16 @@ def main():
 
     resolve = connect(a.wait)
     pm = resolve.GetProjectManager()
+    open_proj = pm.GetCurrentProject()
+    open_name = open_proj.GetName() if open_proj else None
+    switch = bool(a.project) and a.project != open_name
+    if switch and not a.switch:
+        sys.exit(f"{a.project!r} is not the open project ({open_name or 'none'}): opening it closes the project the "
+                 "user is editing. Ask the user first, then re-run with --switch.")
+    if switch:
+        log(f"switching the open project: {open_name or 'none'} -> {a.project}")
     if a.list:
-        proj = pm.LoadProject(a.project) if a.project else pm.GetCurrentProject()
+        proj = pm.LoadProject(a.project) if switch else open_proj
         out = {"projects": pm.GetProjectListInCurrentFolder(), "current_project": proj.GetName() if proj else None}
         if proj:
             cur = proj.GetCurrentTimeline()
@@ -236,9 +248,7 @@ def main():
         print(json.dumps(out, indent=1))
         return 0
 
-    proj = pm.GetCurrentProject()
-    if a.project and (proj is None or proj.GetName() != a.project):
-        proj = pm.LoadProject(a.project)
+    proj = pm.LoadProject(a.project) if switch else open_proj
     if proj is None:
         sys.exit(f"project {a.project!r} not found. Available: {pm.GetProjectListInCurrentFolder()}")
     if a.timeline:
@@ -249,6 +259,9 @@ def main():
         tl = proj.GetCurrentTimeline()
         if tl is None:
             sys.exit("the project has no current timeline: pass --timeline")
+    cur = proj.GetCurrentTimeline()
+    if cur is None or cur.GetName() != tl.GetName():
+        log(f"switching the open timeline: {cur.GetName() if cur else 'none'} -> {tl.GetName()} (tell the user)")
     proj.SetCurrentTimeline(tl)
     fps = float(tl.GetSetting("timelineFrameRate"))
     log(f"project : {proj.GetName()}")

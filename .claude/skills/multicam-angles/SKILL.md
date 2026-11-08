@@ -180,7 +180,8 @@ looking at frames, offer to add it to `reference/frame-rules.md` too.
   (`corner_radius`, `shadow_offset`, `shadow_softness`, `shadow_alpha`,
   `outline_px` + `outline_alpha`), or `"style": "inspector"` for a plain
   crop without Fusion. Defaults: `PIP_DEFAULTS` in `scripts/angles.py`.
-- Agent models: `.claude/agents/angle-*.md`.
+- Agent models: `python3 tools/agent_models.py` sets them for your Claude plan (it
+  rewrites angle-frame-judge); the other `.claude/agents/angle-*.md` files by hand.
 
 Script details (job format, the Fusion graph, transform sign traps, frame
 export caveats) are in the scripts' headers and

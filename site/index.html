@@ -254,18 +254,18 @@
         <div class="bar"><i></i><i></i><i></i><span>Terminal</span></div>
         <div class="cmd">
           <span class="n">1</span>
-          <span class="label">Get it and set it up (once)</span>
-          <pre>git clone https://github.com/js-commit/video-editing-skills && cd video-editing-skills && claude <b>"set me up"</b></pre>
+          <span class="label">Get it (once). Claude downloads it for you, no git needed</span>
+          <pre>claude <b>"install github.com/js-commit/video-editing-skills to ~/video-editing-skills"</b></pre>
           <button class="copy" type="button">Copy</button>
         </div>
         <div class="cmd">
           <span class="n">2</span>
-          <span class="label">Cut your first video</span>
-          <pre>claude <b>"cut the retakes out of ~/Movies/my-take.mp4"</b></pre>
+          <span class="label">Cut your first video. The first time, it offers a quick setup</span>
+          <pre>cd ~/video-editing-skills && claude <b>"cut the retakes out of ~/Movies/my-take.mp4"</b></pre>
           <button class="copy" type="button">Copy</button>
         </div>
       </div>
-      <p class="fine">Free and open source · your video files stay on your computer · already in Claude? Just type the part in quotes.</p>
+      <p class="fine">Free and open source · your video files stay on your computer</p>
     </div>
 
     <div class="demo" id="demo" aria-label="Animation: a transcript where retakes and filler are struck through and removed, and the video gets shorter.">
@@ -511,7 +511,7 @@
   <div class="wrap">
     <div class="center"><div class="kicker">Questions</div><h2>Fair questions.</h2></div>
     <div class="faq">
-      <details><summary>What do I need?</summary><p>Claude Code with a Claude plan (Pro or Max) and a Mac works best. Setup checks the rest, offers to install ffmpeg, and helps you pick how speech becomes text (ElevenLabs Scribe has a free tier; on newer Macs, voz is free and offline). DaVinci Resolve is optional.</p></details>
+      <details><summary>What do I need?</summary><p>Claude Code with a Claude plan (Pro or Max), and a Mac works best. No git or developer tools needed. Setup checks the rest, offers to install ffmpeg, and helps you pick how speech becomes text (ElevenLabs Scribe has a free tier; on newer Macs, voz is free and offline). DaVinci Resolve is optional.</p></details>
       <details><summary>Is it free?</summary><p>Yes, it's open source (MIT). Claude Code uses your Claude plan, and a long recording uses a fair bit of it.</p></details>
       <details><summary>Do I need editing software?</summary><p>No. It can do the whole edit on its own. If you use DaVinci Resolve, it can build the timeline there for you to fine-tune.</p></details>
       <details><summary>Will it make my video sound like AI?</summary><p>No. The first cut only cuts your own words: the mistakes go, everything you meant to say stays, jokes included.</p></details>

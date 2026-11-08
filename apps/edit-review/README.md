@@ -233,7 +233,7 @@ Python 3.9+, standard library (ffprobe through the repo's `tools/vidkit`).
 python3 apps/edit-review/scripts/export_cuts.py draft.mp4 [--timeline NAME] [--project P]
 # ...or from a segment list, for ffmpeg renders:
 python3 apps/edit-review/scripts/export_cuts.py draft.mp4 --segments segments.json
-# review.jsonl + markers.edl from notes.json; --to-resolve adds markers to the open timeline:
+# review.jsonl + markers.edl (experimental) from notes.json; --to-resolve adds markers to the open timeline:
 python3 apps/edit-review/scripts/export_review.py draft.mp4 [--to-resolve] [--clear-resolve]
 ```
 
@@ -259,4 +259,6 @@ z a e w f g` with `shift+` / `cmd+` / `ctrl+` / `opt+` prefixes,
 to stderr), `quit`. Also: `EDIT_REVIEW_AUTO_TRANSCRIBE=yes|no` (force the
 transcribe-on-open), `EDIT_REVIEW_ZOOM=<seconds>` (open zoomed in),
 `EDIT_REVIEW_REPO=<path>` (the repo to run scripts from),
-`EDIT_REVIEW_SHORTCUTS=<path>` (another shortcuts.json).
+`EDIT_REVIEW_SHORTCUTS=<path>` (another shortcuts.json),
+`EDIT_REVIEW_DEBUG=1` (routine progress lines on stderr too; problems are
+always logged there).

@@ -19,6 +19,9 @@ final class WaveformModel: ObservableObject {
     nonisolated private static func log(_ m: String) {
         FileHandle.standardError.write(("edit-review: waveform: " + m + "\n").data(using: .utf8)!)
     }
+    /// Routine progress, only with EDIT_REVIEW_DEBUG set (failures always go to log).
+    nonisolated private static let verbose = ProcessInfo.processInfo.environment["EDIT_REVIEW_DEBUG"] != nil
+    nonisolated private static func trace(_ m: String) { if verbose { log(m) } }
     private var cacheURL: URL?
     /// What `build()` reads, set by a load() that missed the cache.
     private var source: (asset: AVAsset, duration: Double, size: Int, mtime: Int)?
@@ -34,7 +37,7 @@ final class WaveformModel: ObservableObject {
         if let saved = MediaCache.load(Cache.self, from: cacheURL),
            saved.size == stamp.size, saved.mtime == stamp.mtime, saved.bucket == Self.bucket {
             peaks = saved.peaks.withUnsafeBytes { Array($0.bindMemory(to: Float.self)) }
-            Self.log("cache hit, \(peaks.count) buckets")
+            Self.trace("cache hit, \(peaks.count) buckets")
             return true
         }
         source = (asset, duration, stamp.size, stamp.mtime)
@@ -45,7 +48,7 @@ final class WaveformModel: ObservableObject {
         guard let src = source, !building else { return }
         let (asset, duration, size, mtime) = (src.asset, src.duration, src.size, src.mtime)
         building = true
-        Self.log("building, \(Int((duration / Self.bucket).rounded(.up))) buckets")
+        Self.trace("building, \(Int((duration / Self.bucket).rounded(.up))) buckets")
         let total = Int((duration / Self.bucket).rounded(.up))
         task = Task.detached(priority: .utility) { [weak self] in
             var pending: [Float] = []
@@ -73,7 +76,7 @@ final class WaveformModel: ObservableObject {
 
     private func finish(complete: Bool, size: Int, mtime: Int) {
         building = false
-        Self.log("finished complete=\(complete) buckets=\(peaks.count)")
+        Self.trace("finished complete=\(complete) buckets=\(peaks.count)")
         guard complete, !peaks.isEmpty, let url = cacheURL else { return }
         source = nil
         // Normalise so a quiet file still shows a readable shape.
@@ -101,7 +104,7 @@ final class WaveformModel: ObservableObject {
         out.alwaysCopiesSampleData = false
         reader.add(out)
         guard reader.startReading() else { log("startReading failed: \(String(describing: reader.error))"); return false }
-        log("reading")
+        trace("reading")
         defer { if reader.status == .reading { reader.cancelReading() } }
 
         var done: [Float] = []           // finished buckets not yet emitted
@@ -163,7 +166,8 @@ final class WaveformModel: ObservableObject {
         let have = curIndex + (samplesInBucket > 0 ? 1 : 0)
         if total > have { done.append(contentsOf: [Float](repeating: 0, count: total - have)) }
         if !done.isEmpty, await !emit(done) { return false }
-        log("read done status=\(reader.status.rawValue) err=\(String(describing: reader.error))")
+        if reader.status == .failed { log("read failed: \(String(describing: reader.error))") }
+        else { trace("read done status=\(reader.status.rawValue)") }
         return reader.status != .failed
     }
 }

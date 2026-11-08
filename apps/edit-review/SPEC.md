@@ -87,7 +87,7 @@ A note:
 | `text` | string | the note, as typed or dictated (may contain line breaks) |
 | `created_at` | string | ISO 8601 UTC |
 | `archived_at` | string? | set while the note is archived (dealt with) |
-| `archived_reason` | string? | legacy, ignore |
+| `archived_reason` | string? | optional free text: why it was archived |
 
 Rules:
 
@@ -242,9 +242,9 @@ FCM: NON-DROP FRAME
  |C:ResolveColorRed |M:jump cut |D:1
 ```
 
-Not verified against a Resolve import; `export_review.py --to-resolve` adds the
-same markers through the scripting API (tagged `customData`
-`edit-review:<seconds>`).
+The EDL is experimental; `export_review.py --to-resolve` is the dependable
+route: it adds the same markers through the scripting API (tagged
+`customData` `edit-review:<seconds>`).
 
 ## Copy Notes as JSON (clipboard, ⌘⇧C)
 

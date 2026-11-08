@@ -6,7 +6,7 @@ struct Note: Identifiable, Codable, Equatable {
     var text: String
     var createdAt: String
     var archivedAt: String?      // set while the note sits in `archived`
-    var archivedReason: String?  // why, for notes archived by hand from an older schema
+    var archivedReason: String?  // optional free text: why it was archived
 
     enum CodingKeys: String, CodingKey {
         case id, seconds, text, createdAt = "created_at", archivedAt = "archived_at", archivedReason = "archived_reason"
@@ -157,8 +157,7 @@ final class ReviewStore: ObservableObject {
             if !doc.startTimecode.isEmpty { startTimecode = doc.startTimecode }
             loadedFromDisk = true
 
-            // schema/3 dumped the notes of an older cut into `archived`
-            // alongside the ones the user archived by hand. Split them back out.
+            // Archived notes from a cut that is gone belong with that cut.
             var dirty = migrateArchivedOfOlderCuts()
             dirty = dirty || doc.videoDuration == nil || doc.videoBytes == nil
             if let was = doc.videoDuration, abs(was - videoDuration) > Self.lengthTolerance {
@@ -184,25 +183,9 @@ final class ReviewStore: ObservableObject {
     /// 12:16.8 render is exactly as adrift on the 12:14.6 one as an open note
     /// is. So `archived` only ever holds what was archived on the cut that is
     /// open now; everything older moves into the version entry for its pass.
-    ///
-    /// This also migrates schema/3, which dumped the live list of a changed
-    /// cut into `archived` with an `archived_reason` of "video length changed
-    /// A → B" alongside the hand archives. Returns true when anything moved.
+    /// Returns true when anything moved.
     private func migrateArchivedOfOlderCuts() -> Bool {
         var moved = false
-        let auto = archived.filter { ($0.archivedReason ?? "").hasPrefix("video length changed") }
-        if !auto.isEmpty {
-            archived.removeAll { auto.contains($0) }
-            for reason in Set(auto.compactMap(\.archivedReason)) {
-                var group = auto.filter { $0.archivedReason == reason }
-                let stamp = group.compactMap(\.archivedAt).min() ?? ISO8601DateFormatter().string(from: Date())
-                for i in group.indices { group[i].archivedAt = nil; group[i].archivedReason = nil }
-                versions.append(NoteVersion(id: Self.versionID(from: stamp), supersededAt: stamp,
-                                            videoDuration: Self.lengthFrom(reason: reason), videoBytes: nil,
-                                            transcript: nil, notes: group.sorted { $0.seconds < $1.seconds }))
-            }
-            moved = true
-        }
         // Anything archived before the newest cut change was dealt with on a
         // file that is gone. Group by the moment it was archived: one batch
         // per pass (they stay marked as dealt with inside it).
@@ -222,14 +205,6 @@ final class ReviewStore: ObservableObject {
         }
         if moved { versions.sort { $0.supersededAt > $1.supersededAt } }   // newest pass first
         return moved
-    }
-
-    /// "video length changed 12:16.8 → 12:14.6" → 736.8 (the length it was).
-    private static func lengthFrom(reason: String) -> Double? {
-        guard let m = reason.range(of: #"(\d+):(\d+(?:\.\d+)?)"#, options: .regularExpression) else { return nil }
-        let parts = reason[m].split(separator: ":")
-        guard parts.count == 2, let mins = Double(parts[0]), let secs = Double(parts[1]) else { return nil }
-        return mins * 60 + secs
     }
 
     private static let versionStamp: DateFormatter = {

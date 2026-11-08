@@ -143,7 +143,7 @@ final class ReviewController: ObservableObject {
         let p = NSOpenPanel()
         p.allowedContentTypes = [.movie, .mpeg4Movie, .quickTimeMovie, .video]
         p.allowsMultipleSelection = false
-        p.message = "Choose a Resolve export to review (⌘⇧G or paste a path to jump to a folder)"
+        p.message = "Choose a draft render to review (⌘⇧G or paste a path to jump to a folder)"
         p.directoryURL = lastDirectory
         if p.runModal() == .OK, let url = p.url { open(url: url) }
     }
@@ -241,10 +241,10 @@ final class ReviewController: ObservableObject {
         findOpen = false
         findText = ""
         status = "Loading \(url.lastPathComponent)…"
-        log("loading \(url.path)")
+        trace("loading \(url.path)")
         do {
             let info = try await player.load(url: url)
-            log("loaded fps=\(info.fps) duration=\(info.duration) startTC=\(info.startTimecode)")
+            trace("loaded fps=\(info.fps) duration=\(info.duration) startTC=\(info.startTimecode)")
             let bytes = ((try? FileManager.default.attributesOfItem(atPath: url.path))?[.size] as? Int) ?? 0
             let s = ReviewStore(videoURL: url, fps: info.fps, fileStartTimecode: info.startTimecode,
                                 duration: info.duration, bytes: bytes)
@@ -259,12 +259,12 @@ final class ReviewController: ObservableObject {
             status = "\(url.lastPathComponent) · \(fmt(info.fps)) fps · \(n) note\(n == 1 ? "" : "s")"
             + (s.loadedFromDisk ? " reloaded" : "")
             if let c = s.lengthChange {
-                log("new cut: length \(c.from) → \(c.to), \(c.kept) notes moved to the previous cut")
+                trace("new cut: length \(c.from) → \(c.to), \(c.kept) notes moved to the previous cut")
                 if c.kept > 0 {
                     status = "New cut (\(ReviewStore.mmss(c.from)) → \(ReviewStore.mmss(c.to))): \(c.kept) note\(c.kept == 1 ? "" : "s") kept under Previous cut — click one to jump near it, ↩ brings it back"
                 }
             } else if s.reexportedSameLength {
-                log("file re-exported, same length: notes kept")
+                trace("file re-exported, same length: notes kept")
                 status += " · re-exported, same length: notes kept"
             }
             if let cutsNote { status += " · " + cutsNote }
@@ -292,6 +292,10 @@ final class ReviewController: ObservableObject {
     func log(_ msg: String) {
         FileHandle.standardError.write(("edit-review: " + msg + "\n").data(using: .utf8)!)
     }
+
+    /// Routine progress lines, only with EDIT_REVIEW_DEBUG set; problems go to log().
+    private static let verbose = ProcessInfo.processInfo.environment["EDIT_REVIEW_DEBUG"] != nil
+    func trace(_ msg: String) { if Self.verbose { log(msg) } }
 
     private func fmt(_ fps: Double) -> String {
         fps == fps.rounded() ? String(Int(fps)) : String(fps)
@@ -330,7 +334,7 @@ final class ReviewController: ObservableObject {
         runFind(seek: false)
         followTranscript(at: player.currentSeconds)
         if let t = transcript {
-            log("transcript: \(t.words.count) words (\(t.engine ?? "engine not named"))" + (t.stale ? " (STALE: \(t.changeDetail ?? "file changed"))" : t.changed ? " (file re-exported, same length: keeping)" : ""))
+            trace("transcript: \(t.words.count) words (\(t.engine ?? "engine not named"))" + (t.stale ? " (STALE: \(t.changeDetail ?? "file changed"))" : t.changed ? " (file re-exported, same length: keeping)" : ""))
             if t.stale {
                 return "transcript is from a different version of this file (\(t.changeDetail ?? "changed")) — Re-transcribe in the transcript pane"
             }
@@ -350,7 +354,7 @@ final class ReviewController: ObservableObject {
         if let skip = MediaCache.load(AutoTranscribeSkip.self, from: Self.skipURL(url)),
            skip.stamp == AutoTranscribeSkip.stamp(url) {
             transcribeNote = skip.why
-            log("auto-transcribe skipped, failed before on this file: \(skip.why)")
+            trace("auto-transcribe skipped, failed before on this file: \(skip.why)")
             return false
         }
         return true
@@ -379,7 +383,7 @@ final class ReviewController: ObservableObject {
         // script makes a fresh one instead of reusing the stale one.
         if let t = transcript, t.stale {
             if let parked = s.snapshotTranscript(Transcript.sidecarURL(for: video), duration: t.sourceDuration) {
-                log("previous cut's transcript → \(parked.path)")
+                trace("previous cut's transcript → \(parked.path)")
             }
             transcript = nil
             currentWord = nil
@@ -402,7 +406,7 @@ final class ReviewController: ObservableObject {
             }
             switch result {
             case .success(let sidecar):
-                log("transcribed → \(sidecar.path)")
+                trace("transcribed → \(sidecar.path)")
                 loadTranscript()
                 if !auto || transcript == nil {
                     status = transcript.map { "Transcript ready: \($0.words.count) words" } ?? "transcribe.py finished but the sidecar has no words"
@@ -788,7 +792,7 @@ final class ReviewController: ObservableObject {
         switch CutList.load(for: video, duration: duration) {
         case .loaded(let list):
             cuts = list
-            log("cuts: \(list.cuts.count) from \(list.project) / \(list.timeline)")
+            trace("cuts: \(list.cuts.count) from \(list.project) / \(list.timeline)")
             // Every clip's first frame, then every last frame: the strip shows
             // the first one whenever a block has room for only one.
             let f = max(player.fps, 1)
@@ -916,7 +920,7 @@ final class ReviewController: ObservableObject {
             let mtime = (try? FileManager.default.attributesOfItem(atPath: ChangeList.sidecarURL(for: video).path))?[.modificationDate] as? Date
             seenKey = "changesSeen|\(video.path)|\(list.round)|\(Int(mtime?.timeIntervalSince1970 ?? 0))"
             seenChanges = Set(seenKey.flatMap { UserDefaults.standard.stringArray(forKey: $0) } ?? [])
-            log("changes: \(list.changes.count) since \(list.previous ?? "the previous cut"), \(seenChanges.count) seen")
+            trace("changes: \(list.changes.count) since \(list.previous ?? "the previous cut"), \(seenChanges.count) seen")
             return "\(list.changes.count) change\(list.changes.count == 1 ? "" : "s") since \(list.previous ?? "the last cut") · \(Shortcuts.label(.nextChange)) steps through them"
         case .missing:
             changes = nil

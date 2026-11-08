@@ -10,8 +10,8 @@ Writes into <video-stem>.review/:
                   "text": "jump cut"}
   markers.edl    one marker per note in the EDL format DaVinci Resolve writes
                  for timeline markers (Timeline > Import > Timeline Markers
-                 from EDL). Not verified against a Resolve import: if Resolve
-                 refuses it, use --to-resolve.
+                 from EDL). Experimental: --to-resolve is the dependable
+                 way to get the markers into Resolve.
 
 With --to-resolve the same markers are added straight onto the current
 timeline of the open Resolve project through the scripting API (needs

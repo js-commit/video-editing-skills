@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Recipe -> mp4 with ffmpeg only: talking head + b-roll bricks + overlays, the a-roll's own sound, loudness-normalised.
 
-    render_recipe.py <work>/recipe_vN.json [OUT.mp4] [--final] [--size WxH] [--prune] [--no-qc] [--allow-black]
+    render_recipe.py <work>/recipe_vN.json [OUT.mp4] [--final] [--replace] [--size WxH] [--prune] [--no-qc]
+                     [--allow-black]
 
 Where it goes:
   draft    <project drafts folder>/<name>-draft-vN.mp4 at settings render.draft_height (default 1080p), H.264 draft
            quality (vidkit.media.h264_args("draft"): VideoToolbox on a Mac, NVENC on NVIDIA, else libx264);
   --final  <project finals folder>/<name>-final.mp4 at the recipe's canvas (the source resolution), H.264 final quality.
+           An existing final (or an OUT.mp4 that exists) is never overwritten unless --replace is given.
 
 Picture: recipe.flatten() cuts the record clock into pieces (a-roll between bricks, split at every keep, one piece per
 brick, split again at overlay edges). Each piece is its own segment in <work>/segments/, named by a hash of (source,
@@ -162,6 +164,7 @@ def main():
     ap.add_argument("recipe")
     ap.add_argument("out", nargs="?")
     ap.add_argument("--final", action="store_true", help="the master: canvas size, final quality, finals folder")
+    ap.add_argument("--replace", action="store_true", help="overwrite an existing final / OUT file")
     ap.add_argument("--size", help="override the output size WxH")
     ap.add_argument("--prune", action="store_true", help="delete cached segments this recipe no longer uses")
     ap.add_argument("--no-qc", action="store_true")
@@ -193,6 +196,9 @@ def main():
         out = Path(a.out).resolve() if a.out else out_path(rp, r, a.final)
     except C.settings.SettingMissing as e:
         C.settings.exit_missing(e)
+    if (a.final or a.out) and out.exists() and not a.replace:
+        sys.exit(f"{out} already exists and is not overwritten: pass --replace if the user wants it replaced, "
+                 "or give another OUT path")
     out.parent.mkdir(parents=True, exist_ok=True)
     F = R.total_frames(r)
     end_s = float(F / fps)

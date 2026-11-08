@@ -2,7 +2,7 @@
 name: talking-head-ffmpeg
 description: Edit a one-camera talking-head video without an editing app - aroll-draft's cut becomes a JSON recipe, b-roll is matched to the transcript from contact sheets, and ffmpeg renders a 1080p draft (then the full-resolution final), with measured QC and EditReview notes rounds. The no-Resolve path; motion-graphics writes animated overlays into the same recipe. Use when asked to "edit this with ffmpeg", "add b-roll without Resolve", "make a draft with b-roll", "render the recipe", "apply my notes" on a video this skill built, or when editor.nle is "none" / "resolve-free".
 argument-hint: "<take(s) or project> -- which takes, in what order"
-allowed-tools: Read, Write, Edit, Agent, Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/*), Bash(python3 ${CLAUDE_SKILL_DIR}/../*/scripts/*), Bash(python3 ${CLAUDE_SKILL_DIR}/../../../tools/*), Bash(ffmpeg *), Bash(ffprobe *)
+allowed-tools: Read, Write, Edit, Agent, Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/*), Bash(python3 ${CLAUDE_SKILL_DIR}/../broll-library/scripts/search.py *), Bash(python3 .claude/skills/broll-library/scripts/search.py *), Bash(python3 ${CLAUDE_SKILL_DIR}/../motion-graphics/scripts/render.py *), Bash(python3 ${CLAUDE_SKILL_DIR}/../../../tools/vidkit/media.py *), Bash(python3 tools/vidkit/media.py *), Bash(python3 ${CLAUDE_SKILL_DIR}/../../../tools/vidkit/settings.py *), Bash(python3 tools/vidkit/settings.py *), Bash(ffmpeg *), Bash(ffprobe *)
 ---
 
 # Talking head, ffmpeg edit
@@ -63,7 +63,9 @@ W=<project>/<work>/talking-head        # recipes, sheets, segment cache (timelin
    and ends with `review.py changes` so EditReview shows what moved.
 9. **Final** (only when the user approves the draft): re-render motion-graphics clips at full size if any (the final
    warns), then `python3 $K/render_recipe.py $W/recipe_vN.json --final` -> `<project>/<finals>/<name>-final.mp4` at
-   the source resolution. For a YouTube release, the **youtube-release** skill checks loudness on the master and uploads.
+   the source resolution. An existing final is never overwritten: the render stops and says so; pass `--replace` only
+   when the user wants the old master replaced. For a YouTube release, the **youtube-release** skill checks loudness on
+   the master and writes the paste sheet the user uploads from in YouTube Studio.
 
 ## Scripts
 

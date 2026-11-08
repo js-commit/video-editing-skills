@@ -1,0 +1,51 @@
+<title>02 Side panel</title>
+<!-- A transparent panel (bg: null -> ProRes 4444 .mov with alpha, placed as a recipe overlay) in the empty part of a
+     talking-head frame: `center` puts the camera there, so the shape never crosses the speaker. A chip names the
+     idea, morphs into a card where a command types out, a counter runs on the word that names the number, a check
+     lands, and the card shrinks back to a chip before the clip ends (an overlay leaves the way it came in).
+     The command and RATE are PLACEHOLDERS: a real clip shows what the speaker says and their own numbers. -->
+<style>
+.chip{font-size:38px;font-weight:600;white-space:nowrap}
+.cmd{font-size:30px;white-space:nowrap}
+.big{font-size:104px;font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+.unit{font-size:36px;font-weight:600;color:#c3c2b7;white-space:nowrap}
+.ok{position:absolute;width:64px;height:64px;border-radius:32px;background:#199e70;display:flex;align-items:center;justify-content:center}
+</style>
+
+<div data-slot="shape">
+  <div class="L" id="Lchip"><div class="row" style="left:0;top:0;gap:16px;transform:translate(-50%,-50%)"><span id="ic1"></span><span class="chip">Runs offline</span></div></div>
+  <div class="L" id="Lcard">
+    <div class="row" style="left:-262px;top:34px;gap:14px"><span id="ic2"></span><span class="chip" style="font-size:34px">Runs offline</span></div>
+    <div class="a mono cmd" style="left:-262px;top:112px;color:#c3c2b7"><span style="color:#9a9ca3">$&nbsp;</span><span id="typed"></span><span id="caret" style="display:inline-block;width:14px;height:30px;background:#fff;vertical-align:-4px;margin-left:3px"></span></div>
+    <div class="row" style="left:-262px;top:196px;gap:16px;align-items:baseline"><span class="big" id="rate"></span><span class="unit">files / s</span></div>
+    <div class="ok" id="ok" style="left:190px;top:214px"></div>
+  </div>
+  <div class="L" id="Lend"><div class="row" style="left:0;top:0;gap:16px;transform:translate(-50%,-50%)"><span id="ic3"></span><span class="chip">No account needed</span></div></div>
+</div><!--/shape-->
+
+<script>
+const $=id=>document.getElementById(id);
+const C=M.C;
+const CARD=1.6, TY=[1.95,3.0], RUN=3.35, OK=4.6, END=6.2;     // clip-local cues (cues.py)
+const CMD='convert --all photos/', RATE=86;                       // PLACEHOLDERS
+$('ic1').innerHTML=M.icon('chip',40,C.ink); $('ic2').innerHTML=M.icon('chip',34,C.ink2);
+$('ic3').innerHTML=M.icon('check',40,C.ink); $('ok').innerHTML=M.icon('check',38,C.ink,2.6);
+
+M.scene({
+  W:1920,H:1080,T:7.6,bg:null,center:[1530,300],intro:0.15,
+  SH:{chip:{w:440,h:100,r:50,bg:C.pill,cam:1}, card:{w:600,h:350,r:32,bg:C.bg,cam:1}, end:{w:430,h:100,r:50,bg:C.aqua,cam:1}},
+  start:'chip', SEQ:[[CARD,'card'],[END,'end']],
+  layers:[
+    {el:'Lchip',tin:0.15,tout:CARD,o:{din:0}},
+    {el:'Lcard',tin:CARD,tout:END,anchor:'t',update:(t)=>{
+      const n=Math.round(M.clamp((t-TY[0])/(TY[1]-TY[0]))*CMD.length); M.setText($('typed'),CMD.slice(0,n));
+      $('caret').style.opacity=(t<TY[1]+0.2||Math.floor(t*2.4)%2===0)&&t<RUN?1:0;
+      const rv=M.vis(t,RUN-0.05,null,{din:0,lin:0.2}); $('rate').style.opacity=rv.o;
+      M.setText($('rate'),M.count(t,RUN,1.0,0,RATE));
+      const ov=M.vis(t,OK,null,{din:0,lin:0.18}), s=0.6+0.4*M.S(t-OK,22,0.62);
+      Object.assign($('ok').style,{opacity:ov.o,transform:`scale(${t<OK?0.6:s})`});
+    }},
+    {el:'Lend',tin:END,tout:null},
+  ],
+});
+</script>

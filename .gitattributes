@@ -1,0 +1,4 @@
+# Signed programs: git must not touch a byte of them, or the signature breaks.
+apps/*/prebuilt/** -text -diff
+tools/bin/** -text -diff
+.claude/skills/voice-clear/scripts/bin/** -text -diff

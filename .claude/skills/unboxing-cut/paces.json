@@ -1,0 +1,70 @@
+{
+  "_doc": "Pace profiles for sequence.py. Seconds. pre/post = buffer kept before the first and after the last sound event of a beat; max = the longest a beat of that kind may run; hold.hero_max = a moment marked hero (the product turned side to side, the reveal). min_beat drops slivers. snap = how far a cut may move to land on the quietest 20 ms of sound. fade = audio fade at both ends of every clip (no clicks when clips sit back to back). STEADY is the default: on one phone unboxing the three profiles cut 54 s (relaxed), 43 s (steady) and 29 s (brisk) from the same moments; keep the other two to compare, change a value only on the user's note.",
+  "relaxed": {
+    "sound": {
+      "pre": 0.6,
+      "post": 0.7,
+      "max": 5.0
+    },
+    "action": {
+      "pre": 0.5,
+      "post": 0.6,
+      "max": 3.5
+    },
+    "hold": {
+      "max": 3.5,
+      "hero_max": 6.0
+    },
+    "establish": {
+      "max": 2.5
+    },
+    "min_beat": 1.0,
+    "snap": 0.15,
+    "fade": 0.01
+  },
+  "steady": {
+    "sound": {
+      "pre": 0.4,
+      "post": 0.5,
+      "max": 3.5
+    },
+    "action": {
+      "pre": 0.35,
+      "post": 0.4,
+      "max": 2.5
+    },
+    "hold": {
+      "max": 2.5,
+      "hero_max": 4.5
+    },
+    "establish": {
+      "max": 1.8
+    },
+    "min_beat": 0.8,
+    "snap": 0.12,
+    "fade": 0.01
+  },
+  "brisk": {
+    "sound": {
+      "pre": 0.25,
+      "post": 0.3,
+      "max": 2.2
+    },
+    "action": {
+      "pre": 0.2,
+      "post": 0.25,
+      "max": 1.6
+    },
+    "hold": {
+      "max": 1.6,
+      "hero_max": 3.0
+    },
+    "establish": {
+      "max": 1.2
+    },
+    "min_beat": 0.6,
+    "snap": 0.1,
+    "fade": 0.01
+  },
+  "default": "steady"
+}

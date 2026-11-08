@@ -1,0 +1,31 @@
+# Your own setup and preferences (created by the setup skill)
+user/*
+!user/README.md
+!user/settings.example.json
+!user/preferences.example.md
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+
+# Build output
+apps/*/build/
+apps/*/build.noindex/
+
+# Claude Code local state
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/shell-snapshots/
+.claude/todos/
+
+# Secrets and logs
+.env
+*.log
+Thumbs.db

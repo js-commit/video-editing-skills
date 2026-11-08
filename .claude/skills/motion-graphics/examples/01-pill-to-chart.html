@@ -1,0 +1,69 @@
+<title>01 Pill to chart</title>
+<!-- A full-frame cutaway (opaque -> .mp4, placed as a b-roll brick). One shape: a pill names the test, the cursor
+     clicks it, it morphs into a chart card whose bars grow on the words that name them; the cursor hovers the winner
+     for a tooltip and a ring lands on it. Times are clip-local seconds (record time - the clip's in-point) from cues.py.
+     DATA is a PLACEHOLDER: a real clip shows only the creator's own measurements (or relative bars with no numbers). -->
+<style>
+.ttl{font-size:46px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.sub{font-size:34px;color:#9a9ca3;white-space:nowrap}
+.lbl{position:absolute;width:280px;font-size:38px;font-weight:600;text-align:right;white-space:nowrap}
+.val{position:absolute;font-size:38px;font-weight:700;white-space:nowrap}
+.bar{position:absolute;height:72px;border-radius:14px}
+.tip{position:absolute;padding:14px 22px;border-radius:16px;background:#ffffff;color:#22252b;font-size:34px;font-weight:600;white-space:nowrap}
+.ring{position:absolute;border:7px solid var(--ring);border-radius:24px;box-sizing:border-box}
+</style>
+
+<div data-slot="shape">
+  <div class="L" id="Lpill"><div class="row" style="left:0;top:0;gap:18px;transform:translate(-50%,-50%)"><span id="pic"></span><span class="ttl" style="font-size:44px">Same prompt, two machines</span></div></div>
+  <div class="L" id="Lchart">
+    <div class="a ttl" style="left:-680px;top:70px">Build time, same project</div>
+    <div class="a sub" style="left:-680px;top:130px">lower is better</div>
+    <div class="lbl" id="l0" style="left:-680px;top:262px">Machine A</div>
+    <div class="lbl" id="l1" style="left:-680px;top:402px">Machine B</div>
+    <div class="bar" id="b0" style="left:-370px;top:250px"></div>
+    <div class="bar" id="b1" style="left:-370px;top:390px"></div>
+    <div class="val" id="v0" style="top:262px"></div>
+    <div class="val" id="v1" style="top:402px"></div>
+    <div class="ring" id="ring" style="--ring:#FFD400"></div>
+    <div class="tip" id="tip"></div>
+  </div>
+</div><!--/shape-->
+
+<script>
+const $=id=>document.getElementById(id);
+const C=M.C;
+// cues (clip-local s): in a real clip each one is a word's start or end from cues.py --in
+const CLICK=1.15, CHART=1.3, BAR=[2.0,2.75], HOVER=4.3, RING=5.1;
+const DATA=[{v:295,c:C.muted},{v:123,c:C.accent}];   // PLACEHOLDER values (seconds)
+const MAXW=760, VMAX=Math.max(...DATA.map(d=>d.v));
+$('pic').innerHTML=M.icon('clock',46,C.ink);
+$('ring').style.setProperty('--ring',C.ring);
+M.setText($('tip'),(DATA[0].v/DATA[1].v).toFixed(1)+'x faster');   // derived from DATA, never typed in
+const grow=DATA.map((d,i)=>M.track(0,[[BAR[i],d.v/VMAX*MAXW,[11,0.9]]]));
+
+M.scene({
+  W:1920,H:1080,T:7.0,bg:C.bg,intro:0.12,
+  SH:{pill:{w:720,h:112,r:56,bg:C.pill,cam:1.55}, chart:{w:1460,h:540,r:36,bg:C.card,cam:1.12}},
+  start:'pill', SEQ:[[CHART,'chart']],
+  shapePress:[CLICK],
+  layers:[
+    {el:'Lpill',tin:0.12,tout:CHART,o:{din:0}},
+    {el:'Lchart',tin:CHART,tout:null,anchor:'t',update:(t,g)=>{
+      DATA.forEach((d,i)=>{
+        const w=Math.max(0,grow[i](t)), v=M.vis(t,BAR[i]-0.1,null,{din:0,lin:0.25});
+        Object.assign($('b'+i).style,{width:w+'px',background:d.c,opacity:v.o});
+        $('l'+i).style.opacity=v.o;
+        Object.assign($('v'+i).style,{left:(-370+w+22)+'px',opacity:M.clamp((t-BAR[i]-0.35)/0.25)});
+        M.setText($('v'+i),M.count(t,BAR[i],0.9,0,d.v)+' s');
+      });
+      const tv=M.vis(t,HOVER,null,{din:0.05,lin:0.22});
+      Object.assign($('tip').style,{left:(-370+grow[1](t)+205)+'px',top:'394px',opacity:tv.o,
+        filter:tv.blur>0.05?`blur(${tv.blur}px)`:'none',transform:`translateY(${(1-tv.a)*10}px)`});
+      const rv=M.vis(t,RING,null,{din:0,lin:0.3}), pad=16+10*(1-rv.a);
+      Object.assign($('ring').style,{left:(-690-pad)+'px',top:(390-pad)+'px',width:(320+grow[1](t)+172+2*pad)+'px',
+        height:(72+2*pad)+'px',opacity:rv.o});
+    }},
+  ],
+  cursor:{size:44,clicks:[CLICK],keys:[[0,520,300],[0.55,520,300],[1.05,150,8],[1.6,150,8],[2.6,300,230],[3.6,150,170],[4.25,-58,156],[6.0,-52,160]]},
+});
+</script>

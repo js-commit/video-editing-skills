@@ -1,0 +1,32 @@
+<title>03 Lower third</title>
+<!-- A lower third: the speaker's name and what they do, in the bottom-left of the frame while they talk (a transparent
+     panel -> .mov with alpha, placed as an overlay, usually in the first 10-20 s). In the house style it is not a bar
+     sliding in from the edge: the one shape pops in as a small dot, stretches into a name card, swaps to the role line
+     on a word, and shrinks away. NAME / ROLE are PLACEHOLDERS; the user's preferences may set `brand:` (M.BRAND). -->
+<style>
+.nm{font-size:52px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.rl{font-size:36px;font-weight:500;color:#c3c2b7;white-space:nowrap}
+.bar{position:absolute;left:-320px;top:-36px;width:8px;height:72px;border-radius:4px}
+</style>
+
+<div data-slot="shape">
+  <div class="L" id="Lname"><div class="bar" id="bar1"></div><div class="row" style="left:-290px;top:0;transform:translateY(-50%)"><span class="nm" id="nm"></span></div></div>
+  <div class="L" id="Lrole"><div class="bar" id="bar2"></div><div class="row" style="left:-290px;top:0;transform:translateY(-50%)"><span class="rl" id="rl"></span></div></div>
+</div><!--/shape-->
+
+<script>
+const $=id=>document.getElementById(id), C=M.C;
+const NAME='Alex Example', ROLE=M.BRAND || 'Tech reviews every week';   // PLACEHOLDERS
+const CARD=0.35, ROLE_T=2.6, OUT=5.4;                                  // clip-local cues from cues.py --in
+M.setText($('nm'),NAME); M.setText($('rl'),ROLE);
+$('bar1').style.background=C.accent; $('bar2').style.background=C.accent;
+M.scene({
+  W:1920,H:1080,T:6.0,bg:null,center:[520,900],intro:0.1,outro:OUT,
+  SH:{dot:{w:40,h:40,r:20,bg:C.bg,cam:1}, card:{w:680,h:116,r:24,bg:C.bg,cam:1}},
+  start:'dot', SEQ:[[CARD,'card']],
+  layers:[
+    {el:'Lname',tin:CARD+0.05,tout:ROLE_T},
+    {el:'Lrole',tin:ROLE_T,tout:null},
+  ],
+});
+</script>

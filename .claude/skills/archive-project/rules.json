@@ -1,0 +1,64 @@
+{
+  "_help": [
+    "What archive-project keeps and what it calls cruft. Edit freely (or ask Claude: 'from now on, keep the .srt files when archiving').",
+    "Patterns are matched case-insensitively against paths relative to the project folder, with / as the separator.",
+    "'*' matches anything, including across folders. {footage} {audio} {graphics} {drafts} {finals} {work} are replaced by your project_layout folders.",
+    "dirs: a folder name anywhere in the path. files: the file name. paths: the whole relative path. files_with_original: only when the original clip (same name without the proxy part) is also in the project.",
+    "only: media | video | audio | image | video+image limits a rule to those file kinds. keep_exts: text means text files (recipes, notes, transcripts) never match the rule.",
+    "Cruft rules are tried in order; the first match wins. Anything no rule matches is kept. A file a Resolve export (.drp) or an ffmpeg recipe points at is always kept, whatever rule matches it."
+  ],
+  "video_exts": [".mp4", ".mov", ".m4v", ".mkv", ".avi", ".mxf", ".webm", ".mts", ".m2ts", ".braw", ".r3d", ".insv", ".360"],
+  "audio_exts": [".wav", ".mp3", ".m4a", ".aac", ".aif", ".aiff", ".flac", ".ogg", ".opus"],
+  "image_exts": [".jpg", ".jpeg", ".png", ".tif", ".tiff", ".bmp", ".webp", ".heic", ".exr", ".dpx", ".gif"],
+  "text_exts": [".json", ".jsonl", ".md", ".txt", ".py", ".sh", ".html", ".js", ".css", ".srt", ".vtt", ".ass",
+                ".csv", ".tsv", ".yaml", ".yml", ".xml", ".fcpxml", ".edl", ".otio", ".drp", ".cube", ".setting"],
+
+  "cruft": [
+    {"name": "os-metadata", "default": true,
+     "why": "Finder / Explorer housekeeping files, recreated automatically",
+     "files": [".DS_Store", "._*", "Thumbs.db", "desktop.ini"]},
+    {"name": "render-cache", "default": true,
+     "why": "DaVinci Resolve render cache; Resolve rebuilds it when needed",
+     "dirs": ["CacheClip", "RenderCache", "Render Cache"]},
+    {"name": "optimized-media", "default": true,
+     "why": "Resolve optimized media (lighter copies for smooth playback); regenerate from the originals",
+     "dirs": ["OptimizedMedia", "Optimized Media"]},
+    {"name": "proxies", "default": true,
+     "why": "proxy files (small edit-friendly copies); the camera originals stay",
+     "dirs": ["proxies", "proxy", "ProxyMedia", "Proxy Media", "proxy_*"],
+     "files_with_original": ["*_proxy.*", "*.proxy.*"]},
+    {"name": "aroll-draft-work", "default": true,
+     "why": "a-roll draft intermediates (audio extracts, frames, preview renders); the cut list (.aroll.tb.json) and exports stay",
+     "dirs": ["*_aroll_draft", "aroll_draft_*"], "keep_exts": "text",
+     "files": ["*.aroll_draft.mp4", "*.aroll.preview.mp4"]},
+    {"name": "transcription-audio", "default": true,
+     "why": "audio extracted only to transcribe; the transcript stays",
+     "files": ["audio_16k*.wav"],
+     "files_with_original": ["*_audio.mp3", "*_audio.wav", "*_audio.m4a"]},
+    {"name": "drafts", "default": true,
+     "why": "review renders; the timeline or recipe re-renders them. Review notes (.review/notes.json) stay",
+     "paths": ["{drafts}/*"], "only": "media"},
+    {"name": "scratch", "default": true,
+     "why": "rendered bytes in the work folder (frames, segment caches, contact sheets); its text (recipes, plans, notes) stays",
+     "paths": ["{work}/*"], "dirs": ["scratch"], "keep_exts": "text"},
+    {"name": "unused-media", "default": false, "unreferenced": true,
+     "why": "video and images that no Resolve export and no recipe uses (never-imported takes, test stills). Off unless you opt in; audio never counts",
+     "only": "video+image",
+     "not_paths": ["{finals}/*", "*thumb*"]}
+  ],
+
+  "keep": {
+    "finals": {"only": "video",
+               "include": ["{finals}/*"],
+               "exclude": ["{drafts}/*", "*/.review/*", "{work}/*", "*_aroll_draft/*"]},
+    "thumbnails": {"only": "image",
+                   "include": ["*thumb*"],
+                   "exclude": ["{work}/*", "{drafts}/*", "*/candidates/*", "*_guides.*"]},
+    "extras": {"only": null,
+               "include": [],
+               "exclude": []}
+  },
+
+  "durable_roots": ["paths.archive_dir", "paths.finals_dir", "paths.broll_library_dir",
+                    "paths.home_videos_dir", "paths.music_dir"]
+}

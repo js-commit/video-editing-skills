@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key><string>en</string>
+	<key>CFBundleExecutable</key><string>EditReview</string>
+	<key>CFBundleIconFile</key><string>AppIcon</string>
+	<key>CFBundleIdentifier</key><string>io.github.js-commit.edit-review</string>
+	<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+	<key>CFBundleName</key><string>Edit Review</string>
+	<key>CFBundleDisplayName</key><string>Edit Review</string>
+	<key>CFBundlePackageType</key><string>APPL</string>
+	<key>CFBundleShortVersionString</key><string>1.0</string>
+	<key>CFBundleVersion</key><string>1</string>
+	<key>LSMinimumSystemVersion</key><string>14.0</string>
+	<key>LSApplicationCategoryType</key><string>public.app-category.video</string>
+	<key>NSPrincipalClass</key><string>NSApplication</string>
+	<key>NSHighResolutionCapable</key><true/>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key><string>Video</string>
+			<key>CFBundleTypeRole</key><string>Viewer</string>
+			<key>LSHandlerRank</key><string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.movie</string>
+				<string>public.mpeg-4</string>
+				<string>com.apple.quicktime-movie</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/first_run.py\" 2>/dev/null || python \"$CLAUDE_PROJECT_DIR/tools/first_run.py\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}

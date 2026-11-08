@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "about": {
+    "name": null,
+    "channel_name": null,
+    "content_types": [],
+    "notes": null
+  },
+  "claude": {
+    "plan": null
+  },
+  "paths": {
+    "projects_dir": null,
+    "inbox_dir": null,
+    "archive_dir": null,
+    "finals_dir": null,
+    "broll_library_dir": null,
+    "music_dir": null,
+    "home_videos_dir": null,
+    "cache_dir": null
+  },
+  "project_layout": {
+    "footage": "footage",
+    "audio": "audio",
+    "graphics": "graphics",
+    "drafts": "output/drafts",
+    "finals": "output",
+    "work": "work"
+  },
+  "nas": {
+    "enabled": false,
+    "mount_path": null,
+    "notes": null
+  },
+  "editor": {
+    "nle": null,
+    "timeline_resolution": "3840x2160"
+  },
+  "transcription": {
+    "engine": null,
+    "language": null
+  },
+  "render": {
+    "video_encoder": "auto",
+    "draft_height": 1080
+  },
+  "vision": {
+    "python": null,
+    "backend": "qwen35-mlx"
+  },
+  "review": {
+    "app": null
+  },
+  "youtube": {
+    "default_privacy": "unlisted",
+    "made_for_kids": null
+  },
+  "archive": {
+    "default_mode": "lean"
+  },
+  "onboarding": {
+    "completed_steps": [],
+    "skipped_steps": [],
+    "last_run": null
+  }
+}

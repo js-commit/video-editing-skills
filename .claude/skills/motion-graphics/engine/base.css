@@ -7,7 +7,7 @@ body.preview{height:100vh;background:#111214}
 html:not(.alpha) body.preview{background:#22252b}
 #wrap{position:relative;transform-origin:50% 50%}
 body.preview #wrap{position:fixed;left:50%;top:calc(50% - 10px)}
-#stage{position:relative;overflow:hidden;font-family:var(--font);-webkit-font-smoothing:antialiased;color:#fff;font-feature-settings:"tnum" 1}
+#stage{position:relative;overflow:hidden;font-family:var(--font);-webkit-font-smoothing:antialiased;color:var(--ink,#fff);font-feature-settings:"tnum" 1}
 #world{position:absolute;left:0;top:0;transform-origin:0 0}
 #shape{position:absolute;overflow:hidden;isolation:isolate;box-shadow:0 2px 4px rgba(0,0,0,.18),0 18px 44px -12px rgba(0,0,0,.45)}
 .L{position:absolute;width:0;height:0;transform-origin:0 0}

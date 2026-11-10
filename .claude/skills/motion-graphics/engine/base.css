@@ -1,6 +1,8 @@
-/* page shell for a clip (build.py inlines it). System fonts by default; the user's theme sets --font / --mono. */
+/* page shell for a clip (build.py inlines it). System fonts by default; the user's theme sets --font / --mono, and a
+   video's look.json may set those plus --display (a title or stat face) and --shadow (the shape's shadow). */
 :root{--font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-      --mono:"SF Mono",SFMono-Regular,Menlo,Consolas,"DejaVu Sans Mono","Liberation Mono",monospace}
+      --mono:"SF Mono",SFMono-Regular,Menlo,Consolas,"DejaVu Sans Mono","Liberation Mono",monospace;
+      --display:var(--font);--shadow:0 2px 4px rgba(0,0,0,.18),0 18px 44px -12px rgba(0,0,0,.45)}
 html,body{margin:0;background:#22252b;overflow:hidden}
 html.alpha,html.alpha body{background:transparent}
 body.preview{height:100vh;background:#111214}
@@ -9,11 +11,12 @@ html:not(.alpha) body.preview{background:#22252b}
 body.preview #wrap{position:fixed;left:50%;top:calc(50% - 10px)}
 #stage{position:relative;overflow:hidden;font-family:var(--font);-webkit-font-smoothing:antialiased;color:var(--ink,#fff);font-feature-settings:"tnum" 1}
 #world{position:absolute;left:0;top:0;transform-origin:0 0}
-#shape{position:absolute;overflow:hidden;isolation:isolate;box-shadow:0 2px 4px rgba(0,0,0,.18),0 18px 44px -12px rgba(0,0,0,.45)}
+#shape{position:absolute;overflow:hidden;isolation:isolate;box-shadow:var(--shadow)}
 .L{position:absolute;width:0;height:0;transform-origin:0 0}
 .a{position:absolute}
 .row{position:absolute;display:flex;align-items:center;white-space:nowrap}
 .blend{mix-blend-mode:difference}
+.display{font-family:var(--display)}
 .mono{font-family:var(--mono)}
 svg{display:block;overflow:visible}
 #cursor{position:absolute;left:0;top:0;height:auto;transform-origin:3px 3px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));z-index:10}

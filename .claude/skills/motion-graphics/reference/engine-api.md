@@ -7,8 +7,23 @@ no state carried between frames. That is what lets `render.py` render any frame 
 motion blur.
 
 Read `examples/01-pill-to-chart.html` (full-frame cutaway), `examples/02-side-panel.html` (transparent panel) and
-`examples/03-lower-third.html` (name card) before the first clip of a session: they are the quality bar and the starting
-points.
+`examples/03-lower-third.html` (name card) before the first clip of a session: they are the bar for mechanics and
+timing. They are drawn in the default palette and are not a look to copy; the look is the video's `look.json`
+(`reference/look.md`).
+
+## The look in a clip
+
+`build.py` lays `<motion>/look.json` over the user's theme and hands both to the page before the clip's script runs, so
+`M.C` already holds the video's colours and the page has its variables.
+
+- **Colours**: `C.bg`, `C.card`, `C.accent` ... in script; `var(--bg)`, `var(--card)`, `var(--accent)` ... in CSS
+  (one variable per `M.C` key). Text is `ink` unless a class says otherwise. Never a literal hex: a clip with one cannot
+  follow the look.
+- **Faces**: text inherits the UI face (`--font`). `class="display"` is the look's display face, `class="mono"` its mono.
+- **Shape**: the shadow is the look's (`--shadow`); the corner radius is each state's `r`, chosen for the medium (a
+  paper slip 0-4, a product window that product's own radius, a pill only when the look has pills).
+- **Motion**: `M.MORPH`, `M.FAST`, `M.SLOW`, `M.SOFT`, `M.CAM` and the swap blur (`M.VIS.blur`, the default of `M.vis`'s
+  `blur`) are the look's when it sets them. Use the presets by name, not `[15,0.84]` typed into the clip.
 
 ## Fragment skeleton
 
@@ -69,7 +84,7 @@ Each slot's `</div><!--/name-->` closing marker is how `build.py` finds it: a sl
 
 | Call | What it does |
 |---|---|
-| `M.C` | The palette: `bg` #22252b, `card`, `pill`, `grid`, `ink` white, `ink2`, `muted`, `accent` (= `blue` unless themed), `blue`, `orange`, `aqua`, `yellow`, `red`, `ring` #FFD400 (highlight rings), `light` (a light shape on dark footage). The user's theme (preferences `## motion-graphics`) overrides these: use `C.accent`, `C.bg`, `C.card`… in the script and the same names as CSS variables in `<style>` (`color:var(--muted)`, `background:var(--card)`), never hex codes, so a restyle reaches every clip. |
+| `M.C` | The palette: `bg` #22252b, `card`, `pill`, `grid`, `ink` white, `ink2`, `muted`, `accent` (= `blue` unless themed), `blue`, `orange`, `aqua`, `yellow`, `red`, `ring` #FFD400 (highlight rings), `light` (a light shape on dark footage). The user's theme (preferences `## motion-graphics`) and then the video's `look.json` override these: use `C.accent`, `C.bg`, `C.card`… in the script and the same names as CSS variables in `<style>` (`color:var(--muted)`, `background:var(--card)`), never hex codes, so a restyle reaches every clip. |
 | `M.track(v0, [[t, value, spring?], …])` | A value that changes target many times: the sum of one closed-form spring per change. Returns `t => value`. |
 | `M.ctrack('#hex', [[t,'#hex'], …])` | The same for colours. Returns `t => 'rgb(...)'`. Colours must be `#rrggbb`. |
 | `M.MORPH`, `M.FAST`, `M.SLOW`, `M.SOFT`, `M.CAM`, `M.INSTANT` | Spring presets `[stiffness w, damping z]`. FAST/SLOW for leading/trailing edges; INSTANT for invisible resets. |
@@ -135,7 +150,9 @@ Map what the speaker says onto one of these:
 - Items that slide under a highlight need `M.FAST` springs, or the highlight row sits empty for a moment.
 - Keep the cursor inside the frame at every camera zoom, including mid-morph. A panel usually has no cursor.
 - Size a chip to its text plus 2 x 60 px; a chip sized to the text alone clips it. The stills sheet is where that shows.
-- `M.ctrack` needs `#rrggbb`: no `rgba()`, no names. Shape fills stay opaque; use the palette.
+- `M.ctrack` needs `#rrggbb`: no `rgba()`, no names. Shape fills stay opaque; use the palette (`C.*` values are
+  `#rrggbb` under any theme or look, `build.py` enforces it).
+- Text on a filled chip (an accent end state) is not covered by the contrast check: read it on the sheet.
 - `ui-monospace` does not resolve in headless Chromium (it falls back to a serif): use `.mono` (the theme's mono font,
   then SF Mono / Menlo / Consolas / DejaVu Sans Mono).
 - A font that is not installed falls back silently to the system font: check a stills sheet after changing `font:`.

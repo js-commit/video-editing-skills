@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Clip fragments -> self-contained HTML pages (engine, page shell, cursor, the user's theme and local images inlined).
+"""Clip fragments -> self-contained HTML pages (engine, page shell, cursor, the user's theme, the video's look and
+local images inlined).
 
-    build.py <motion>/clips/NN-name.html [...] [--out <motion>/dist] [--theme theme.json]
-    build.py --show-theme                       # the theme the clips will get
+    build.py <motion>/clips/NN-name.html [...] [--out <motion>/dist] [--theme theme.json] [--look look.json]
+    build.py --show-theme [--look look.json]    # the theme the clips will get
 
 A fragment is the clip's own <title>, <style>, slots (world / shape / over) and <script> calling M.scene
 (reference/engine-api.md). The page that comes out runs on its own in any browser: open it to watch the clip loop, add
@@ -17,6 +18,10 @@ Theme: the `## motion-graphics` section of user/preferences.md, lines like
 (any other bullet there is a free-text preference for Claude, not for this script). --theme FILE takes a JSON
 {"colors": {"bg": ...}, "font": ..., "mono": ..., "brand": ...} instead. Colours must be #rrggbb. A font must be
 installed on this computer; the system font is the fallback. --out defaults to ../dist beside the clips folder.
+
+Look: <motion>/look.json (beside the clips folder, or --look) is ONE video's look, laid over the theme: its colours by
+role, faces (a font file in the project is inlined), the shape's shadow, springs and swap blur (reference/look.md).
+Every clip of the video gets the same one. A look whose text is under 4.5:1 on its surfaces is refused.
 """
 from __future__ import annotations
 
@@ -39,6 +44,75 @@ KEYS = {"background": "bg", "bg": "bg", "canvas": "bg", "card": "card", "pill": 
         "text2": "ink2", "muted": "muted", "grid": "grid", "accent": "blue", "accent1": "blue", "accent2": "orange",
         "accent3": "aqua", "accent4": "yellow", "red": "red", "highlight": "ring", "ring": "ring", "light": "light"}
 HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
+LOOK_KEYS = {"source", "line", "banned", "colors", "fonts", "shadow", "springs", "blur"}
+SPRINGS = {"MORPH", "FAST", "SLOW", "SOFT", "CAM"}
+
+
+def engine_palette():
+    """The engine's default colours by role (M.C in engine/motion.js), plus accent."""
+    js = (ENGINE / "motion.js").read_text(encoding="utf-8")
+    pal = dict(re.findall(r"(\w+):'(#[0-9a-fA-F]{6})'", re.search(r"M\.C = \{(.*?)\};", js, re.S).group(1)))
+    pal["accent"] = pal["blue"]
+    return pal
+
+
+def contrast(a, b):
+    """WCAG contrast ratio of two #rrggbb colours."""
+    def lum(h):
+        c = [int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+        c = [x / 12.92 if x <= 0.03928 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
+        return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+    hi, lo = sorted((lum(a), lum(b)), reverse=True)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+def check_contrast(theme, what, fatal):
+    """Text must read on the surfaces that carry it. A look is refused; a preferences theme only warns."""
+    pal = engine_palette()
+    colors = theme.get("colors", {})
+    pal.update(colors)
+    if "accent" not in colors:
+        pal["accent"] = pal["blue"]
+    for surface in ("bg", "card", "pill"):
+        ratio = contrast(pal["ink"], pal[surface])
+        if ratio < 4.5:
+            msg = f"{what}: text {pal['ink']} on {surface} {pal[surface]} is {ratio:.1f}:1 - it needs 4.5:1 on bg, card and pill"
+            if fatal:
+                sys.exit(msg)
+            print("WARN " + msg, file=sys.stderr)
+    for k in ("accent", "ring"):
+        if contrast(pal[k], pal["bg"]) < 3 and contrast(pal[k], pal["card"]) < 3:
+            print(f"WARN {what}: {k} {pal[k]} is under 3:1 on both bg and card - it will not read as the focus", file=sys.stderr)
+
+
+def apply_look(theme, path):
+    """Lay one video's look.json over the theme. The prose keys (source, line, banned) stay in the file."""
+    path = Path(path)
+    look = json.loads(path.read_text(encoding="utf-8"))
+    bad = set(look) - LOOK_KEYS
+    if bad:
+        sys.exit(f"{path}: unknown key(s) {sorted(bad)} - a look has {sorted(LOOK_KEYS)}")
+    roles = engine_palette()
+    for k, v in (look.get("colors") or {}).items():
+        if k not in roles:
+            sys.exit(f"{path}: colors has no role '{k}' - the roles are {sorted(roles)}")
+        if not HEX.match(str(v)):
+            sys.exit(f"{path}: colors.{k} is {v!r} - every colour is #rrggbb")
+    bad = set(look.get("springs") or {}) - SPRINGS
+    if bad:
+        sys.exit(f"{path}: unknown spring(s) {sorted(bad)} - a look sets {sorted(SPRINGS)} as [stiffness, damping]")
+    theme = dict(theme, colors=dict(theme.get("colors", {}), **{k: v.lower() for k, v in (look.get("colors") or {}).items()}))
+    fonts = dict(look.get("fonts") or {})
+    faces = []
+    for f in fonts.pop("faces", []):
+        p = Path(f["src"]) if os.path.isabs(f["src"]) else path.resolve().parent / f["src"]
+        if not p.is_file():
+            sys.exit(f"{path}: font file {p} not found - a face is a local file, never a web URL")
+        faces.append({"family": f["family"], "src": str(p), "weight": f.get("weight", 400), "style": f.get("style", "normal")})
+    theme["look"] = {"fonts": fonts, "faces": faces, "path": str(path),
+                     **{k: look[k] for k in ("shadow", "springs", "blur") if k in look}}
+    check_contrast(theme, str(path), fatal=True)
+    return theme
 
 
 def preferences_path():
@@ -84,7 +158,18 @@ def theme_css_js(theme):
         css += f':root{{--mono:"{theme["mono"]}","SF Mono",Menlo,Consolas,monospace}}'
     if theme.get("colors", {}).get("bg"):
         css += f'html,body,html:not(.alpha) body.preview{{background:{theme["colors"]["bg"]}}}'
-    js = "window.THEME=" + json.dumps({"colors": theme.get("colors", {}), "brand": theme.get("brand", "")}) + ";"
+    look = theme.get("look") or {}
+    for f in look.get("faces", []):                     # inline_images turns the file into a data URI
+        css += (f"@font-face{{font-family:'{f['family']}';src:url(\"{f['src']}\");font-weight:{f['weight']};"
+                f"font-style:{f['style']}}}")
+    for key, var in (("ui", "--font"), ("mono", "--mono"), ("display", "--display")):
+        if look.get("fonts", {}).get(key):              # a look's faces are CSS font-family lists, used as written
+            css += f":root{{{var}:{look['fonts'][key]}}}"
+    if look.get("shadow") is not None:
+        css += f":root{{--shadow:{look['shadow']}}}"
+    th = {"colors": theme.get("colors", {}), "brand": theme.get("brand", "")}
+    th.update({k: look[k] for k in ("springs", "blur") if k in look})
+    js = "window.THEME=" + json.dumps(th).replace("</", "<\\/") + ";"
     return css, js
 
 
@@ -138,20 +223,29 @@ def main():
     ap.add_argument("clips", nargs="*")
     ap.add_argument("--out")
     ap.add_argument("--theme", help="a theme JSON instead of user/preferences.md")
+    ap.add_argument("--look", help="the video's look.json (default: look.json beside the clips folder)")
     ap.add_argument("--show-theme", action="store_true")
     a = ap.parse_args()
+    if a.look and not Path(a.look).is_file():
+        sys.exit(f"no look at {a.look}")
     theme = json.loads(Path(a.theme).read_text(encoding="utf-8")) if a.theme else theme_from_preferences()
+    check_contrast(theme, "theme", fatal=False)
     if a.show_theme:
-        print(json.dumps(theme, indent=1))
+        print(json.dumps(apply_look(theme, a.look) if a.look else theme, indent=1))
         return 0
     if not a.clips:
         ap.error("give clip fragments to build")
+    looks = {}
     for s in a.clips:
         out = Path(a.out) if a.out else Path(s).resolve().parent.parent / "dist"
         out.mkdir(parents=True, exist_ok=True)
         d = out / (Path(s).stem + ".html")
-        build(s, d, theme)
-        print(json.dumps({"built": str(d)}))
+        look = Path(a.look) if a.look else Path(s).resolve().parent.parent / "look.json"
+        look = look if look.is_file() else None
+        if look not in looks:
+            looks[look] = apply_look(theme, look) if look else theme
+        build(s, d, looks[look])
+        print(json.dumps({"built": str(d), "look": str(look) if look else None}))
     return 0
 
 

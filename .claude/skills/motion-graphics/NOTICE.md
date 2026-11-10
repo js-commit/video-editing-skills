@@ -21,6 +21,13 @@ github.com/Barty-Bart/motion-graphics (commit e8d610a), under the MIT License:
 > COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 > OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+`reference/look.md` (and the look step in `SKILL.md`) adapt the method of **HyperFrames** by HeyGen,
+github.com/heygen-com/hyperframes (commit 88db830), from `skills/hyperframes/references/look.md`, `spec.md`, `motion.md`
+and `types/data.md`: a look taken from outside input and written as numbers, the list of generated-video defaults to
+ban, a look as the rules of one medium, motion by role, charts as pictures. Licensed under the Apache License, Version
+2.0 (http://www.apache.org/licenses/LICENSE-2.0), Copyright 2026 HeyGen, Inc. The text here is rewritten for this skill
+and changed from the original; no HyperFrames code, CLI, registry item, font or preset is used.
+
 Icon paths in `M.IC` are adapted from Lucide (lucide.dev), under the ISC License. Some of those icons (among them
 arrow-right, check, x, plus, clock, search, terminal, star and cpu) are derived from Feather, which Lucide redistributes
 under the MIT License:

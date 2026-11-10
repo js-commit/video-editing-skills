@@ -18,21 +18,25 @@ lower third: a name card in the bottom third of the frame). They hurt when they 
 moment, or arrive so often that the face is never on screen. Less is more: a few well-timed graphics beat one every
 line.
 
-The house style, the default every clip starts from:
+How every clip moves, whatever it looks like:
 - **One shape that never cuts.** A pill becomes a card becomes a chart: it morphs size, corners and colour between
   states, and its content swaps with a short blur. No hard cuts or wipes between separate cards.
 - **Springs**, with at most a tiny overshoot; leading and trailing edges on different springs so things stretch.
 - **A cursor** that clicks and drags where an interaction helps explain (optional; panels usually have none).
 - **Every change lands on a spoken word** (word times from the transcript).
 
+What a clip looks like is not fixed. Left alone, every clip comes out as the same dark card, pill and blue accent, the
+look of the tool. So each video gets its own look, taken from the user's brand, a reference or the subject itself,
+written as numbers before any clip (`reference/look.md`).
+
 ```
 M=${CLAUDE_SKILL_DIR}/scripts                          # python3, stdlib + ffmpeg + a Chromium-family browser
 K=${CLAUDE_SKILL_DIR}/../talking-head-ffmpeg/scripts    # the recipe, lint and renderer
 W=<project>/<work>/talking-head                       # the recipes (talking-head-ffmpeg's timeline.py prints it)
-MO=$W/motion                                           # plan.json  clips/  dist/  out/  sheets/
+MO=$W/motion                                           # plan.json  look.json  clips/  dist/  out/  sheets/
 ```
 
-`clips/` and `plan.json` are the source of truth; `dist/` and `out/` are rebuilt from them.
+`clips/`, `plan.json` and `look.json` are the source of truth; `dist/` and `out/` are rebuilt from them.
 
 ## Before you start
 
@@ -40,7 +44,8 @@ MO=$W/motion                                           # plan.json  clips/  dist
   `- background:`, `- card:`, `- pill:`, `- text:`, `- muted:`, `- accent2:`, `- highlight:`, `- font:`,
   `- mono font:`, `- brand:`) are applied by `build.py` to every clip; `build.py --show-theme` prints what it found.
   No theme = the dark default palette and the system font. Other bullets there are style preferences for you to follow.
-  When the user describes their brand ("orange and black, Inter font"), offer to save it as these lines.
+  When the user describes their brand ("orange and black, Inter font"), offer to save it as these lines. The theme is
+  the brand for every video; one video's look (`$MO/look.json`, step 2) is laid over it.
 - `python3 $M/browser.py check` finds the browser and test-renders a page (headless, temporary profile, nothing touched).
   None found: tell the user which browsers work; the path can be set with `settings.py set motion_graphics.browser <path>`.
 - A talking-head-ffmpeg recipe must exist (`recipe_vN.json`, the one the user last reviewed).
@@ -55,11 +60,17 @@ python3 $K/sheets.py aroll $W/recipe_vN.json         # a-roll tiles every 6 s
 Read the whole transcript and every a-roll sheet. Know where the speaker demos, where the bricks already are, and where
 the frame has empty space (often above the shoulder on the side they are not facing; check per take). Ask only what you
 cannot see, in one question round: density (default medium), the real figures for any number they say but do not show,
-lines they want left on their face.
+lines they want left on their face, and whether they have a reference for the look (a video, a frame, a brand).
 
 ## 2. Plan, and get a go before writing any clip
 
-Show a table, one row per clip: `# | in-out (record) | the words | what the shape does, on which words | full / panel | why`.
+**The look first.** Read `reference/look.md` and settle the video's one look before the table. The user's theme, when
+there is one, fixes the colours and fonts; the rest comes from their reference, else from the subject's own world (the
+product's packaging and interface, the footage, files they give you), else the default palette as the named fallback.
+Write `$MO/look.json` with its `source`, its LOOK `line` (a number wherever an adjective would go) and its `banned`
+list, and show the LOOK line and where it came from above the table.
+
+Then show a table, one row per clip: `# | in-out (record) | the words | what the shape does, on which words | full / panel | why`.
 
 **How much of the frame a clip takes is the key call: give the reason per clip.**
 - **Full-frame cutaway** (becomes a brick): the line describes something to see. 3-10 s, then give the face back. Never
@@ -94,11 +105,14 @@ One fragment per clip in `$MO/clips/NN-name.html`: start from the closest exampl
 and follow `reference/engine-api.md`. Cues per clip: `python3 $M/cues.py $W/recipe_vN.json --in <clip in> --to <clip out>`
 (clip-local word starts and ends): a change goes on a word's start, a landing on its end. Set `T` = the slot + 0.5 s.
 Stage `W`/`H` = 1920x1080 for a 16:9 recipe (render `--scale` covers bigger canvases). Use palette names (`C.accent`,
-`C.card` in the script, `var(--accent)`, `var(--card)` in CSS), never hex codes, so the user's theme reaches every clip.
+`C.card` in the script, `var(--accent)`, `var(--card)` in CSS), never hex codes or font names, so the theme and the
+video's look reach every clip. The examples show mechanics and timing in the default palette; they are not a look to copy.
 
 ```
 python3 $M/build.py $MO/clips/*.html                 # -> $MO/dist/NN-name.html (open one in a browser to watch it loop)
 ```
+
+`build.py` reports the look it used; `"look": null` means there is no `look.json`: go back to step 2.
 
 ## 4. Check stills on the key words
 
@@ -110,6 +124,10 @@ Pick each state's settled moment plus a couple of mid-morph frames. With `--reci
 picture at those record times: that is how you prove it never covers the face or a hand. Look at every sheet yourself;
 small text needs `--tile 960 --cols 2` or `--crop w:h:x:y`. Fix anything clipped, cramped, unreadable, off-word, or a
 cursor leaving the frame, then sheet again.
+
+On the first sheet of a video, also read it against the look: name every default the clip used anyway
+(`reference/look.md`, "Banned by default"), add each to `banned` in `look.json`, and fix the clip. Put two clips' sheets
+side by side: the same entrance and the same layout on both is a fault.
 
 ## 5. Render
 
@@ -148,21 +166,31 @@ what is illustrative, and which real figures you still need from the user.
 2. Edit its fragment, `build.py`, re-render only that clip, `place.py` from the same plan into the next recipe.
 3. Generalise: one "too small to read" means re-checking every clip's text size. Lasting taste -> a bullet under
    `## motion-graphics`.
+   A note on the look itself (a colour, a font, "too generic", "looks like every other video") is a `look.json`
+   change: go back to its source, edit the look, rebuild and re-render every clip.
 4. **The a-roll changed under the graphics?** Run `place.py` from the old plan into the new recipe: it carries each
    in/out through the source frame. ERROR = a clip's in or out point was cut (re-plan it); WARN = the words under it
    changed (re-time its cues with `cues.py --in <new in>`, re-render). Then update `plan.json`.
 
-## Style defaults (restyle via preferences)
+## Style (the theme and the video's look decide the rest)
 
-- **Colour:** dark canvas `#22252b`, cards `#2c3038`, pills `#3a3f4b`, white text, muted `#9a9ca3`; one accent per idea
-  (blue `#3987e5`, then orange / aqua / yellow for a second or third series); highlight rings `#FFD400`. A panel uses a
-  dark card so it reads over a bright room. The theme lines replace any of these.
-- **Type:** the system UI font (or the theme's `font:`), a monospace font for commands, file names and terminals. One
-  icon set, one stroke weight (`M.icon`).
+- **Colour:** one accent, one focus per state (`C.accent`); a second or third series takes a hue only when it must.
+  Text reads at 4.5:1 on its surface (`build.py` checks). A panel's card must read over the room at its brightest:
+  prove it on the `--recipe --at` sheet.
+- **The default palette** (no theme and no `look.json`): dark canvas `#22252b`, cards `#2c3038`, pills `#3a3f4b`, white
+  text, muted `#9a9ca3`, blue `#3987e5` (then orange / aqua / yellow), highlight rings `#FFD400`.
+- **Type:** the look's faces, else the theme's `font:`, else the system UI font; `.display` for a title or stat when
+  the look has a display face; a monospace font for commands, file names and terminals. One icon set, one stroke
+  weight (`M.icon`).
 - **Minimum sizes at 1080p:** text never under 34 px after the camera zoom; titles 44-58 px, labels 34-40 px, a big
   stat 96 px+. Phones show YouTube small.
-- **Avoid:** bouncy easing, particles, glows, gradients on UI chrome, mixed icon strokes, dead time, stock-template moves
-  (a bar sliding in from the edge, word-by-word kinetic type, wipes between separate cards), made-up data.
+- **Motion:** an exit is shorter than its entrance, a landed title holds still, and the clips of one video do not all
+  enter the same way (`reference/look.md`, "Motion by role").
+- **Charts:** one number at a time, the accent on the one series that matters, the rest grey, annotated on the mark,
+  with a source line (`reference/look.md`, "Charts as pictures").
+- **Avoid:** the list in `reference/look.md` plus the video's own `banned`. Always, under any look: bouncy easing,
+  particles, glows, gradients on UI chrome, mixed icon strokes, dead time, stock-template moves (a bar sliding in from
+  the edge, word-by-word kinetic type, wipes between separate cards), made-up data.
 
 ## Scripts
 
@@ -170,13 +198,13 @@ what is illustrative, and which real figures you still need from the user.
 |---|---|
 | `browser.py` | finds Chrome / Chromium / Edge / Brave / Vivaldi on macOS, Windows, Linux; headless DevTools client |
 | `cues.py` | the words on a recipe's clock; `--in` gives a clip's clip-local cues |
-| `build.py` | fragment -> self-contained page (engine, theme, cursor, local images inlined) |
+| `build.py` | fragment -> self-contained page (engine, theme, the video's `look.json`, cursor, local images and fonts inlined); checks text contrast |
 | `render.py clip` | page -> .mp4 (opaque) or .mov / .webm with alpha, motion blur, frame-count checked |
 | `render.py stills` | labelled contact sheet; `--recipe --at` draws a panel over the real picture |
 | `place.py` | plan.json -> the recipe's bricks and overlays, re-anchored through the source when the a-roll changed |
 
 `engine/motion.js` (springs, morphing scene, cursor, palette) and `engine/base.css` are shared by every clip: a fix there
-fixes all. Credits: `NOTICE.md` (MIT engine, Lucide icons).
+fixes all. Credits: `NOTICE.md` (MIT engine, Lucide icons, the look method adapted from HyperFrames).
 
 ## Hard rules
 
@@ -189,6 +217,6 @@ fixes all. Credits: `NOTICE.md` (MIT engine, Lucide icons).
 
 ## What the user can customize
 
-The theme (colours, fonts, brand) via preferences; density; whether a cursor appears; minimum text size; the style
-rules above (say "from now on..." and the bullet is saved). New interaction patterns or icons go into
+The theme (colours, fonts, brand) via preferences; one video's look via its `look.json`; density; whether a cursor
+appears; minimum text size; the style rules above (say "from now on..." and the bullet is saved). New interaction patterns or icons go into
 `engine/motion.js` or a new example via the `customize` skill.

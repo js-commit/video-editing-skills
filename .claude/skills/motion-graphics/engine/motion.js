@@ -2,8 +2,8 @@
    Every style is a pure function of time inside seek(t): no CSS transitions, no timers, no state between frames,
    so any frame can be rendered on its own.
    Adapted from github.com/Barty-Bart/motion-graphics (skills/motion-broll/engine/motion.js, MIT, (c) 2026 Bart -
-   see NOTICE.md). Added here: a themeable palette (M.C, overridden by window.THEME from the user's preferences,
-   also set as CSS variables --bg, --muted ...), M.count, and ?t= stills. */
+   see NOTICE.md). Added here: a themeable palette (M.C, overridden by window.THEME: the user's theme, then the video's
+   look.json; also set as CSS variables --bg, --muted ...), a look's springs and swap blur, M.count, and ?t= stills. */
 (function(){
 const M = window.M = {};
 // default palette: dark canvas, white ink, one accent per idea. build.py merges the user's theme over it.
@@ -27,6 +27,11 @@ const S = M.S = (tau,w,z)=>{
   return 1-Math.exp(-w*tau)*(1+w*tau);
 };
 M.MORPH=[15,0.84]; M.FAST=[27,0.86]; M.SLOW=[12.5,0.9]; M.SOFT=[10,0.95]; M.CAM=[7.5,1]; M.INSTANT=[Infinity,1];
+// a video's look (look.json, reference/look.md) may replace the spring family and the content swap's blur
+M.VIS = {blur:12};
+{const T=window.THEME||{};
+ for(const k of ['MORPH','FAST','SLOW','SOFT','CAM']) if((T.springs||{})[k]) M[k]=T.springs[k];
+ if(T.blur!=null) M.VIS.blur=T.blur;}
 
 // a value that changes target many times = the sum of one spring per change.
 // period>0 and a closed loop adds the previous cycle's residue so t=period == t=0.
@@ -46,7 +51,7 @@ M.step = (v0,keys)=>t=>{let v=v0; for(const k of keys) if(t>=k[0]) v=k[1]; retur
 
 // content swap: exit blurs out fast; enter waits, then blurs in (own timings -> no overlap)
 M.vis = (t,tin,tout,o={})=>{
-  const din=o.din??0.07, lin=o.lin??0.26, lout=o.lout??0.12, bl=o.blur??12;
+  const din=o.din??0.07, lin=o.lin??0.26, lout=o.lout??0.12, bl=o.blur??M.VIS.blur;
   const a = tin==null?1:eo((t-tin-din)/lin);
   const b = tout==null?0:eo((t-tout)/lout);
   return {o:a*(1-b), blur:(1-a)*bl+b*bl*0.8, s:(0.94+0.06*a)*(1-0.03*b), a, b};

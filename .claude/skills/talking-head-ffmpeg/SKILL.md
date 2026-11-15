@@ -52,6 +52,9 @@ W=<project>/<work>/talking-head        # recipes, sheets, segment cache (timelin
    then write `$W/recipe_v1.json` = v0 + `broll` + `needs`. Rules and sources: `reference/broll-planning.md`. Schema:
    `reference/recipe-schema.md`. Ask the user only what the footage cannot answer (one question round).
 4. **Lint.** `python3 $K/recipe.py lint $W/recipe_v1.json --fix` until it passes (`recipe.py show` lists every piece).
+   Then `python3 $K/sheets.py bricks $W/recipe_v1.json` and read every sheet: each brick's first and last frame. A brick
+   that opens on the set-up (an empty frame, the speaker walking in or reaching for the product) or closes on them
+   leaving gets its `in_s` moved or its length cut. The lint cannot see this; do it before every render.
 5. **Draft.** `python3 $K/render_recipe.py $W/recipe_v1.json` -> `<project>/<drafts>/<name>-draft-v1.mp4` (1080p, fast
    hardware encode), then measured QC (frame count, black frames, loudness, true peak, silences; exit 1 on a failure)
    and EditReview's `cuts.json`. Fix any QC error before showing the user.
@@ -72,7 +75,7 @@ W=<project>/<work>/talking-head        # recipes, sheets, segment cache (timelin
 | script | does |
 |---|---|
 | `timeline.py` | cut list(s) + transcripts -> `recipe_v0.json`, edited transcript on the record clock |
-| `sheets.py` | b-roll contact sheets (source time) + catalog; a-roll sheets (record time) |
+| `sheets.py` | b-roll contact sheets (source time) + catalog; a-roll sheets (record time); `bricks`: each brick's first and last frame |
 | `recipe.py` | `lint [--fix]`, `show`, `carry` (re-place bricks after the a-roll changed, through the source) |
 | `render_recipe.py` | recipe -> draft / `--final` mp4: cached segments, sample-exact a-roll sound, loudnorm, QC, cuts.json |
 | `qc.py` | measured QC of any render (also run by the renderer) |

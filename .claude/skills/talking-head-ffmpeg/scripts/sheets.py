@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Contact sheets the planner reads: every b-roll clip (source time), and the edited a-roll (record time).
+"""Contact sheets the planner reads: every b-roll clip (source time), the edited a-roll (record time), and each
+brick's first and last frame.
 
     sheets.py broll <work>/recipe_v0.json [--dirs DIR ...] [--files CLIP[@START-END] ...] [--width 480]
     sheets.py aroll <work>/recipe_vN.json [--every 6]
+    sheets.py bricks <work>/recipe_vN.json
 
 A contact sheet is a grid of still frames from a clip, each stamped with its time: the cheapest way for Claude to see
 what a clip shows without watching it.
@@ -19,7 +21,13 @@ aroll: one tile every --every record seconds, stamped with the RECORD time -> <w
 tiles a sheet). This is how the planner sees where the speaker shows something to the camera: talking head the
 audience must see, so no brick goes there.
 
-Re-runs skip sheets that already exist (delete a sheet to redo it).
+bricks: the FIRST and LAST frame of every brick in the recipe -> <work>/sheets/bricks/<recipe>_NN.jpg (15 bricks a
+sheet, each pair stamped with the brick's record time). The b-roll sheets tile every ~4 s, so they cannot show what a
+brick opens or closes on: the empty set before the speaker walks into a shot they filmed of themselves, a hand reaching
+for the camera, the wobble of a pick-up. Read every sheet before a render; a brick whose first tile is not already the
+action moves its in_s later. Always rewritten; the tiles ignore `zoom`.
+
+Re-runs skip the broll and aroll sheets that already exist (delete a sheet to redo it).
 """
 from __future__ import annotations
 
@@ -157,18 +165,38 @@ def cmd_aroll(a, r, work):
     print(json.dumps({"tiles": len(samples), "every_s": a.every, "sheets": made}))
 
 
+def cmd_bricks(a, r, work):
+    fps, stem = R.fps_of(r), Path(a.recipe).stem
+    outdir = work / "sheets" / "bricks"
+    outdir.mkdir(parents=True, exist_ok=True)
+    for old in outdir.glob(f"{stem}_*.jpg"):
+        old.unlink()
+    tiles = []
+    for p in (p for p in R.flatten(r) if p["kind"] == "broll"):
+        a0, a1 = float(p["rec_f"] / fps), float((p["rec_f"] + p["n"]) / fps)
+        last = p["in_s"] + float((p["n"] - 1) / fps) * p["speed"]
+        tiles += [(p["file"], p["in_s"], f"{stamp(a0)} IN  {Path(p['file']).stem[-8:]}"), (p["file"], last, f"OUT {stamp(a1)}")]
+    per, made = 30, []
+    for s in range(0, len(tiles), per):
+        out = outdir / f"{stem}_{s // per + 1:02d}.jpg"
+        sheet(tiles[s:s + per], str(out), a.width, 6)
+        made.append(str(out))
+        print(f"{out}: bricks {s // 2 + 1}-{min(len(tiles), s + per) // 2}", file=sys.stderr)
+    print(json.dumps({"bricks": len(tiles) // 2, "sheets": made}))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("cmd", choices=["broll", "aroll"])
+    ap.add_argument("cmd", choices=["broll", "aroll", "bricks"])
     ap.add_argument("recipe")
     ap.add_argument("--dirs", action="append", help="folder (glob) of b-roll clips instead of the project's footage")
     ap.add_argument("--files", action="append", help="a clip from anywhere, optionally CLIP@START-END")
     ap.add_argument("--every", type=float, default=6.0, help="aroll: seconds between tiles")
-    ap.add_argument("--width", type=int, default=480, help="broll: tile width in px")
+    ap.add_argument("--width", type=int, default=480, help="broll, bricks: tile width in px")
     a = ap.parse_args()
     rp = Path(a.recipe).resolve()
     r = C.read_json(rp)
-    (cmd_broll if a.cmd == "broll" else cmd_aroll)(a, r, rp.parent)
+    {"broll": cmd_broll, "aroll": cmd_aroll, "bricks": cmd_bricks}[a.cmd](a, r, rp.parent)
 
 
 if __name__ == "__main__":

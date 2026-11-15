@@ -31,6 +31,11 @@ projects' clips are linked in place.
   a screen, the audience must see it: no brick there. The a-roll sheets are how you know.
 - **The brick shows what the words are about.** A clip of a different product goes only over speech about that product.
   If nothing fits, place nothing and add a `needs` entry. A wrong brick is worse than a gap.
+- **A brick opens and closes inside the action.** A shot the speaker filmed of themselves starts with the set-up (the
+  empty room, them walking in, picking the product up, reaching for the camera) and ends the same way. `in_s` goes after
+  they are in place and doing the thing, and the brick ends before they leave. The b-roll sheets tile every ~4 s and
+  cannot show this: tile the clip's first seconds (`sheets.py broll <recipe> --files <clip>@0-8`) before taking an
+  in-point near its head, and read `sheets.py bricks` before every render.
 - **3-15 s per brick**, cut on calm motion inside one shot. Each source range is used once. A slow-motion brick
   (`speed` 0.4 on a 60 fps clip) reads `dur x speed` seconds of its clip.
 - **Edges near jump cuts.** A brick edge 0.1-0.6 s off a jump cut leaves a flash of face; put the edge ON the cut (or let

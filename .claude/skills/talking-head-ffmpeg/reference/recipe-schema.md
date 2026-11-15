@@ -55,6 +55,7 @@ can be rendered again.
 | `broll[].speed` | 1 = real time. 0.4 plays a 60 fps clip at 24 fps frame for frame (slow motion); it reads `dur x speed` seconds of the clip |
 | `broll[].fit` | `contain` (default: scaled to fit, bars if the shape differs), `cover` (fills the frame, crops about the zoom focus), `blur` (the whole clip over a blurred copy of itself: a portrait phone clip without black bars) |
 | `broll[].zoom` | `{"z", "cx", "cy"}`: z > 1 punches in (implies cover) toward the focus point (0-1). On a 4K source, z 2.0 is still full sharpness in a 1080p draft |
+| `broll[].grade` | `{"gamma", "gain", "sat"}`, each 1.0 = untouched: brightens one dark brick. gamma 1.3-1.5 lifts the mid-tones without pushing a bright window further, gain scales the luma, sat puts back the colour a lift washes out. Try the values on one frame beside the original first |
 | `broll[].why` | one line: the words it covers -> what it shows. Notes rounds and the review worksheet read it |
 | `overlays[]` | composited over whatever plays (talking head or brick). A PNG (frame-sized, RGBA) is held for the slot with an alpha fade of `fade` seconds; a `.mov` (ProRes 4444) or `.webm` (VP9) with alpha plays frame for frame from its start (`fade: 0`, it animates itself; must be at the recipe's fps and frame-shaped) |
 | `needs[]` | spots that deserve b-roll the footage does not have. Never rendered; it becomes the shoot list |

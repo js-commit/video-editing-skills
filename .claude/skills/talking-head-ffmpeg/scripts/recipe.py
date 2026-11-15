@@ -134,7 +134,7 @@ def flatten(recipe):
         aroll_span(f, s)
         pieces.append({"rec_f": s, "n": e - s, "file": b["file"],
                        "in_s": b["in_s"] + float((s - b["rec_f"]) / fps) * b["speed"],
-                       "speed": b["speed"], "zoom": b.get("zoom"), "fit": b.get("fit"), "kind": "broll", "brick": b["i"]})
+                       "speed": b["speed"], "zoom": b.get("zoom"), "fit": b.get("fit"), "grade": b.get("grade"), "kind": "broll", "brick": b["i"]})
         f = e
     aroll_span(f, F)
     return pieces
@@ -317,6 +317,9 @@ def lint(recipe, fix=False):
             if abs(sw / sh - fw / fh) > 0.02 and (b.get("fit") or ("cover" if zoomed else "contain")) == "contain":
                 warns.append(f"brick {b['i']} @ {tc(b['rec_f'])}: {sw}x{sh} source renders with bars - "
                              "set fit cover (with a zoom focus) or blur")
+            extra = sorted(set(b.get("grade") or {}) - {"gamma", "gain", "sat"})
+            if extra:
+                errs.append(f"brick {b['i']} @ {tc(b['rec_f'])}: grade has no {extra} - it takes gamma, gain and sat")
             if b["n"] < SHORT_BRICK_S * fps:
                 warns.append(f"brick {b['i']} @ {tc(b['rec_f'])}: only {float(b['n'] / fps):.2f}s")
         for a, b in zip(bricks, bricks[1:]):

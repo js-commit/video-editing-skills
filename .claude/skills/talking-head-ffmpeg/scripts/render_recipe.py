@@ -67,6 +67,20 @@ def geometry(p, W, H):
     return f"scale={W}:{H}:force_original_aspect_ratio=decrease:{sc},pad={W}:{H}:(ow-iw)/2:(oh-ih)/2"
 
 
+def grade(p):
+    """A brick's optional "grade": {"gamma", "gain", "sat"} as a ",lutyuv=..." filter, or "" when it changes nothing.
+    gamma above 1 lifts the mid-tones (a backlit shot opens up while its highlights stay put), gain multiplies the luma
+    above black, sat scales the colour about grey (a lifted shot looks washed out without a little more). It works on
+    the 8-bit limited-range frame, after the geometry."""
+    g = p.get("grade") or {}
+    gamma, gain, sat = (float(g.get(k, 1.0)) for k in ("gamma", "gain", "sat"))
+    if all(abs(v - 1.0) < 1e-3 for v in (gamma, gain, sat)):
+        return ""
+    luma = f"clip(minval+(maxval-minval)*{gain:.4f}*pow(max(val-minval,0)/(maxval-minval),{1 / gamma:.4f}),minval,maxval)"
+    chroma = f"clip((val-128)*{sat:.4f}+128,minval,maxval)"
+    return f",lutyuv=y='{luma}':u='{chroma}':v='{chroma}'"
+
+
 @functools.lru_cache(None)
 def retag(path):
     """",setparams=..." for a source not tagged limited-range bt709 (phone screen recordings are often full-range
@@ -215,7 +229,7 @@ def main():
         geo = geometry(p, W, H)
         slow = f",setpts=PTS/{p['speed']:.6f}" if abs(p["speed"] - 1) > 1e-6 else ""
         vf = (f"setpts=PTS-STARTPTS{slow},fps={fps_s},tpad=stop_mode=clone:stop_duration=2,{geo},"
-              f"format=yuv420p,setsar=1{retag(p['file'])}")
+              f"format=yuv420p,setsar=1{grade(p)}{retag(p['file'])}")
         ov_in, ov_key = [], ""
         if p["ov"]:
             fc = [f"[0:v]{vf}[b0]"]

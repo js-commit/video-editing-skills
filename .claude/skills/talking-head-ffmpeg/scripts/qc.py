@@ -36,7 +36,8 @@ def count_frames(path):
         return 0
 
 
-def measure(path, lufs=-14.0, want_frames=None, fps=None, allow_black=False):
+def measure(path, lufs=-14.0, want_frames=None, fps=None, allow_black=False, fade_out_s=0.0):
+    """fade_out_s: the length of a closing fade to black the edit asked for; black inside it is not a fault."""
     info = C.media.probe(path)
     got = count_frames(path)
     log = subprocess.run([C.ffmpeg(), "-hide_banner", "-nostats", "-i", str(path),
@@ -71,7 +72,10 @@ def measure(path, lufs=-14.0, want_frames=None, fps=None, allow_black=False):
             errs.append(f"loudness {qc['lufs']} LUFS, target {lufs}")
         if qc["true_peak_dbtp"] is not None and qc["true_peak_dbtp"] > -1.0:
             errs.append(f"true peak {qc['true_peak_dbtp']} dBTP > -1.0")
+    closing = (info["duration"] or 0) - fade_out_s - 0.1 if fade_out_s > 0 else None
     for s, e in blacks:
+        if closing is not None and s >= closing:
+            continue
         (warns if allow_black else errs).append(f"black frames {s:.2f}-{e:.2f}s")
     for s, e in silences:
         warns.append(f"silence {C.tc(s)}-{C.tc(e)} ({e - s:.1f}s)")

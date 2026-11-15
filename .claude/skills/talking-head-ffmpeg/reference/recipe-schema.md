@@ -50,11 +50,12 @@ can be rendered again.
 | `project` | the project folder (finals go in its finals folder; files outside it get a WARN) |
 | `fps`, `width`, `height` | the edit canvas: the first take's own rate and size. Drafts render smaller (settings `render.draft_height`), `--final` at this size |
 | `lufs` | integrated loudness target (YouTube plays at about -14). True peak is held at -1.5 dBTP |
+| `fade_out` | seconds, optional: the last frames fade to black and the sound fades with them. Put a b-roll brick over the sign-off and, if the take is quiet after the last word, let the last keep run a second or two longer so the fade has room. The QC does not report this black |
 | `aroll[]` | the cut, in play order. Each keep plays `[in_s, out_s)` of `file`, picture and sound. `gain_db` levels a keep with its own sound (a phone clip, a voice-over insert) to the takes |
 | `broll[]` | bricks: picture only, laid over the a-roll at `record_s` for `dur` seconds, playing `file` from `in_s`. The sound stays the a-roll's |
 | `broll[].speed` | 1 = real time. 0.4 plays a 60 fps clip at 24 fps frame for frame (slow motion); it reads `dur x speed` seconds of the clip |
 | `broll[].fit` | `contain` (default: scaled to fit, bars if the shape differs), `cover` (fills the frame, crops about the zoom focus), `blur` (the whole clip over a blurred copy of itself: a portrait phone clip without black bars) |
-| `broll[].zoom` | `{"z", "cx", "cy"}`: z > 1 punches in (implies cover) toward the focus point (0-1). On a 4K source, z 2.0 is still full sharpness in a 1080p draft |
+| `broll[].zoom` | `{"z", "cx", "cy"}`: z > 1 punches in (implies cover) toward the focus point (0-1). On a 4K source, z 2.0 is still full sharpness in a 1080p draft. Add `"to"` for a slow push-in: `{"z": 1.0, "to": 1.12}` drifts from z to that value across the whole brick at a steady rate (2-3 % per second reads as slow; `to` below `z` pulls out) |
 | `broll[].grade` | `{"gamma", "gain", "sat"}`, each 1.0 = untouched: brightens one dark brick. gamma 1.3-1.5 lifts the mid-tones without pushing a bright window further, gain scales the luma, sat puts back the colour a lift washes out. Try the values on one frame beside the original first |
 | `broll[].why` | one line: the words it covers -> what it shows. Notes rounds and the review worksheet read it |
 | `overlays[]` | composited over whatever plays (talking head or brick). A PNG (frame-sized, RGBA) is held for the slot with an alpha fade of `fade` seconds; a `.mov` (ProRes 4444) or `.webm` (VP9) with alpha plays frame for frame from its start (`fade: 0`, it animates itself; must be at the recipe's fps and frame-shaped) |

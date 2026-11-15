@@ -134,7 +134,8 @@ def flatten(recipe):
         aroll_span(f, s)
         pieces.append({"rec_f": s, "n": e - s, "file": b["file"],
                        "in_s": b["in_s"] + float((s - b["rec_f"]) / fps) * b["speed"],
-                       "speed": b["speed"], "zoom": b.get("zoom"), "fit": b.get("fit"), "grade": b.get("grade"), "kind": "broll", "brick": b["i"]})
+                       "speed": b["speed"], "zoom": b.get("zoom"), "fit": b.get("fit"), "grade": b.get("grade"), "kind": "broll", "brick": b["i"],
+                       "brick_off": s - b["rec_f"], "brick_n": b["n"]})   # for a zoom that moves across the brick
         f = e
     aroll_span(f, F)
     return pieces
@@ -162,6 +163,7 @@ def with_overlays(recipe, pieces):
         a, end = p["rec_f"], p["rec_f"] + p["n"]
         for b in [e for e in edges if a < e < end] + [end]:
             out.append({**p, "rec_f": a, "n": b - a, "in_s": p["in_s"] + float((a - p["rec_f"]) / fps) * p["speed"],
+                        "brick_off": p.get("brick_off", 0) + a - p["rec_f"],
                         "ov": [(o["file"], a - o["rec_f"], o["n"], o["fade_s"]) for o in ovs
                                if o["rec_f"] <= a < o["rec_f"] + o["n"]]})
             a = b
@@ -317,6 +319,11 @@ def lint(recipe, fix=False):
             if abs(sw / sh - fw / fh) > 0.02 and (b.get("fit") or ("cover" if zoomed else "contain")) == "contain":
                 warns.append(f"brick {b['i']} @ {tc(b['rec_f'])}: {sw}x{sh} source renders with bars - "
                              "set fit cover (with a zoom focus) or blur")
+            zm = b.get("zoom") or {}
+            if sorted(set(zm) - {"z", "cx", "cy", "to"}):
+                errs.append(f"brick {b['i']} @ {tc(b['rec_f'])}: zoom has no {sorted(set(zm) - {'z', 'cx', 'cy', 'to'})} - it takes z, cx, cy and to")
+            elif min(float(zm.get("z", 1.0)), float(zm.get("to", 1.0))) < 1.0:
+                errs.append(f"brick {b['i']} @ {tc(b['rec_f'])}: zoom z and to start at 1.0 (the whole frame)")
             extra = sorted(set(b.get("grade") or {}) - {"gamma", "gain", "sat"})
             if extra:
                 errs.append(f"brick {b['i']} @ {tc(b['rec_f'])}: grade has no {extra} - it takes gamma, gain and sat")

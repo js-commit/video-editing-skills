@@ -48,6 +48,22 @@ SR, FADE = 48000, 0.006
 TAGS = ["-color_range", "tv", "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709"]
 
 
+def push_in(p, W, H, fps_s):
+    """A zoom with "to": the frame drifts from zoom z to zoom "to" across the whole brick at a steady rate, about the
+    focus cx / cy. zoompan picks its crop in whole source pixels, which reads as shimmer on a slow move, so the picture
+    is enlarged first (4x a 1080p frame, 2x a 4K one) and the crop then moves in fractions of an output pixel. A brick
+    split by an overlay edge keeps one continuous move: each piece knows its offset into the brick."""
+    z = p["zoom"]
+    z0, z1 = float(z.get("z", 1.0)), float(z["to"])
+    cx, cy = float(z.get("cx", 0.5)), float(z.get("cy", 0.5))
+    big = 4 if W <= 1920 else 2
+    steps = max(p.get("brick_n", p["n"]) - 1, 1)
+    return (f"scale={W * big}:{H * big}:force_original_aspect_ratio=increase:flags=lanczos:out_range=tv,"
+            f"crop={W * big}:{H * big},"
+            f"zoompan=z='{z0:.5f}+{z1 - z0:.5f}*(on+{p.get('brick_off', 0)})/{steps}'"
+            f":x='(iw-iw/zoom)*{cx:.4f}':y='(ih-ih/zoom)*{cy:.4f}':d=1:s={W}x{H}:fps={fps_s}")
+
+
 def geometry(p, W, H):
     """The piece's frame-filling filter. fit: contain (scale + pad, the default), cover (fill and crop about the zoom
     focus), blur (contained over a blurred, darkened copy of itself: a portrait phone clip without bars). A zoom z > 1
@@ -216,6 +232,8 @@ def main():
     out.parent.mkdir(parents=True, exist_ok=True)
     F = R.total_frames(r)
     end_s = float(F / fps)
+    fade_f = min(round(float(r.get("fade_out", 0) or 0) * fps), F)     # frames of closing fade to black (picture + sound)
+    fade_s = float(fade_f / fps)
     seg_dir = work / "segments"
     seg_dir.mkdir(exist_ok=True)
     enc = C.media.h264_args("final" if a.final else "draft", height=H) + ["-g", str(round(float(fps)))] + TAGS
@@ -226,10 +244,14 @@ def main():
     lst, made = [], 0
     for i, p in enumerate(pieces):
         n = p["n"]
-        geo = geometry(p, W, H)
+        geo = push_in(p, W, H, fps_s) if "to" in (p.get("zoom") or {}) else geometry(p, W, H)
         slow = f",setpts=PTS/{p['speed']:.6f}" if abs(p["speed"] - 1) > 1e-6 else ""
         vf = (f"setpts=PTS-STARTPTS{slow},fps={fps_s},tpad=stop_mode=clone:stop_duration=2,{geo},"
               f"format=yuv420p,setsar=1{grade(p)}{retag(p['file'])}")
+        # "fade_out": the closing fade, timed on this piece's own clock (a negative start = already fading as it begins)
+        closing = ""
+        if fade_f and p["rec_f"] + n > F - fade_f:
+            closing = f",fade=t=out:st={float((F - fade_f - p['rec_f']) / fps):.4f}:d={float(fade_f / fps):.4f}"
         ov_in, ov_key = [], ""
         if p["ov"]:
             fc = [f"[0:v]{vf}[b0]"]
@@ -245,11 +267,11 @@ def main():
                           f"[b{j}][o{j}]overlay=0:0:eof_action=pass:format=yuv420[b{j + 1}]")
                 so = os.stat(f)
                 ov_key += f"|{os.path.realpath(f)}:{so.st_size}:{int(so.st_mtime)}"
-            fc.append(f"[b{len(p['ov'])}]format=yuv420p,"
+            fc.append(f"[b{len(p['ov'])}]format=yuv420p{closing},"
                       f"setparams=range=tv:colorspace=bt709:color_primaries=bt709:color_trc=bt709[v]")
             vf_args = ["-filter_complex", ";".join(fc), "-map", "[v]"]
         else:
-            vf_args = ["-vf", vf]
+            vf_args = ["-vf", vf + closing]
         st = os.stat(p["file"])
         key = (f"{os.path.realpath(p['file'])}|{st.st_size}|{int(st.st_mtime)}|{p['in_s']:.4f}|{n}|"
                f"{' '.join(vf_args)}{ov_key}|{' '.join(enc)}")
@@ -313,7 +335,7 @@ def main():
     j = json.loads(m[m.rfind("{"):m.rfind("}") + 1])
     ln2 = (f"{ln}:measured_I={j['input_i']}:measured_TP={j['input_tp']}:measured_LRA={j['input_lra']}:"
            f"measured_thresh={j['input_thresh']}:offset={j['target_offset']}:linear=true")
-    res = subprocess.run([ffmpeg, "-v", "error", "-y", "-i", str(voiced), "-af", f"{ln2},aresample={SR}",
+    res = subprocess.run([ffmpeg, "-v", "error", "-y", "-i", str(voiced), "-af", f"{ln2},aresample={SR}" + (f",afade=t=out:st={end_s - fade_s:.4f}:d={fade_s:.4f}" if fade_f else ""),
                           "-c:a", "pcm_s24le", str(mixed)], capture_output=True, text=True)
     if res.returncode:
         sys.exit("loudnorm: " + res.stderr[-400:])
@@ -344,7 +366,7 @@ def main():
         print(json.dumps(result))
         return 0
     import qc as Q
-    qc, qerrs, qwarns = Q.measure(out, lufs, F, float(fps), a.allow_black)
+    qc, qerrs, qwarns = Q.measure(out, lufs, F, float(fps), a.allow_black, fade_out_s=fade_s)
     print(json.dumps({**result, "qc": qc, "errors": qerrs, "warnings": qwarns}, indent=1))
     for w in qwarns:
         print("WARN ", w, file=sys.stderr)

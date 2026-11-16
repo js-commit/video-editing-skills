@@ -99,3 +99,6 @@ coverage level, the no-brick opening length, brick length range, draft height, l
 timeline.py, or the recipe's `lufs`), always-blur portrait clips. Bigger changes (a true J-cut on the a-roll, HEVC
 masters, a colour LUT on every piece: one more filter in `render_recipe.py`'s per-piece chain) go through the
 `customize` skill, which edits these scripts in the user's copy.
+
+To finish an edit by hand in DaVinci Resolve Studio (colour, trims by eye), the `ffmpeg-to-resolve` skill rebuilds a
+recipe as an ordinary timeline of the original clips and checks it against the draft.

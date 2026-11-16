@@ -42,6 +42,7 @@ SKILL.md, `${CLAUDE_SKILL_DIR}` is the skill's folder and the repo root is
 | `broll-brick-layer` | Lays b-roll onto a cut a-roll timeline in Resolve; seam/flicker audits. |
 | `resolve-export-draft` | Renders the current Resolve timeline to a draft file. |
 | `talking-head-ffmpeg` | The no-Resolve edit: cut + b-roll as a JSON recipe rendered by ffmpeg. |
+| `ffmpeg-to-resolve` | Rebuilds a talking-head-ffmpeg recipe as an editable Resolve timeline and checks it against the ffmpeg draft. |
 | `motion-graphics` | Animated overlays/cutaways timed to the words, rendered in a headless browser. |
 | `edit-review-notes` | Turns timestamped review notes (EditReview `notes.json`) into timeline changes. |
 | `broll-library` | Harvests b-roll from finished projects into a searchable library; searches it. |

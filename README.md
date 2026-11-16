@@ -53,6 +53,7 @@ You get, next to the video:
 | `setup` | "/setup", "change my archive folder" |
 | `aroll-draft` | "draft this a-roll", "cut the retakes and silences out of this" |
 | `talking-head-ffmpeg` | "edit this with b-roll, no Resolve" |
+| `ffmpeg-to-resolve` | "move this ffmpeg edit into Resolve so I can finish it by hand" (Resolve Studio) |
 | `broll-brick-layer` | "lay b-roll on this Resolve timeline" |
 | `multicam-angles` | "pick the camera angles" (two-camera shoots, Resolve Studio) |
 | `motion-graphics` | "add an animated stat / callout here" |

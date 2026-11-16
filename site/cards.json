@@ -13,6 +13,7 @@
     "aroll-draft": {"group": "cut", "line": "Cuts the retakes, stumbles and \"is this thing on?\" out of a recording of you talking. No clipped words.", "say": "cut the retakes out of my-take.mp4", "star": true},
     "multicam-angles": {"group": "cut", "line": "Filmed with two cameras? Picks the best angle for every moment.", "say": "pick the camera angles", "needs": "Resolve Studio"},
     "talking-head-ffmpeg": {"group": "cut", "line": "Puts your extra clips over the talking and renders the video. No editing app needed.", "say": "edit this with b-roll"},
+    "ffmpeg-to-resolve": {"group": "polish", "line": "Rebuilds that edit as a DaVinci Resolve timeline you can finish by hand, then checks it matches frame for frame.", "say": "move this edit into Resolve", "needs": "Resolve Studio"},
     "unboxing-cut": {"group": "cut", "line": "Turns a long unboxing into a short, satisfying sequence.", "say": "cut the unboxing"},
     "broll-brick-layer": {"group": "fill", "line": "Covers the talking with matching clips on your DaVinci Resolve timeline, then double-checks every pick.", "say": "lay b-roll on this timeline", "needs": "Resolve Studio"},
     "broll-library": {"group": "fill", "line": "Every clip you've ever shot, described and searchable.", "say": "have I ever shot a rainy street?"},

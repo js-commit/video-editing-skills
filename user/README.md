@@ -10,3 +10,4 @@ Your own setup lives here and is never committed (see `.gitignore`):
   adds to it when you correct something ("cuts are too tight", "always 1080p
   drafts"). Start from `preferences.example.md` or let it grow on its own.
 - `cache/` — regenerable working files (safe to delete).
+- `update-check.json` — when the toolkit last looked for a newer version of itself (safe to delete).

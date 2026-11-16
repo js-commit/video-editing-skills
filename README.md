@@ -30,6 +30,11 @@ Claude) can change. It learns your taste as you work.
 Always start Claude from this folder: that is where the skills live. Your video
 projects can be anywhere.
 
+**Updates.** Once a day, when you start Claude here, the toolkit looks whether a
+newer version is out and Claude tells you in one line. Say "update the toolkit"
+and it shows what is new and installs it; your settings, preferences and your own
+changes to skills stay. Switch the look off with "stop checking for updates".
+
 ## Your first a-roll draft
 
 ```
@@ -77,6 +82,7 @@ You get, next to the video:
 | `aroll-benchmark` | "score the auto cut against my edit" (dev) |
 | `editing-coach` | "how do I color correct in Resolve?", "teach me stop motion" |
 | `customize` | "from now on…", "change how thumbnails work" |
+| `update-toolkit` | "check for updates", "update the toolkit" |
 | `new-project` | "start a new project called X" |
 
 ## It learns
@@ -139,6 +145,9 @@ Linux too.
   it on your Mac. `voz` and `voice-clear` use the Desert Ant Labs SDK, which sends
   its maker a small usage signal (a generated device id, a call count, the
   program and SDK names, and your OS name and major version; never audio or text).
+- Once a day, at the start of a Claude session, the toolkit asks GitHub for the id of
+  its own latest version, to tell you when there is an update. Nothing about you, your
+  computer or your files is sent. Off: `python3 tools/vidkit/settings.py set updates.check false`.
 - Claude Code usage counts against your plan. A 15-minute a-roll draft runs a
   handful of Opus subagents.
 - Nothing is ever uploaded to YouTube for you: you upload in YouTube Studio.

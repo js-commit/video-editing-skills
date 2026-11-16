@@ -140,6 +140,12 @@ their no-frames modes.
 |---|---|---|---|
 | `archive.default_mode` | `lean` keeps only the finals, thumbnails and reusable b-roll; `keep` moves the whole cleaned project (footage included) to the archive. Every run still shows the list and asks. | `"lean"` | archive-project |
 
+## updates
+
+| Key | Meaning | Example | Used by |
+|---|---|---|---|
+| `updates.check` | Look once a day, when a Claude session starts, whether a newer version of this toolkit is out, and say so in one line. It asks where your copy came from (GitHub) for the latest version's id and sends nothing about you or your files. `false` switches it off; "check for updates" still works. | `true` | tools/update.py, update-toolkit |
+
 ## onboarding
 
 Written by the `setup` skill; you don't need to edit these.

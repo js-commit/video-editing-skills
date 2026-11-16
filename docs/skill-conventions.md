@@ -15,6 +15,8 @@ tools/vidkit/media.py                  ffmpeg/ffprobe helpers, encoder choice, H
 tools/vidkit/resolve.py                DaVinci Resolve scripting helpers
 tools/vidkit/transcript.py             transcript sidecars (read / ensure)
 tools/transcribe.py                    word-level transcription CLI (ElevenLabs Scribe, voz)
+tools/first_run.py                     the session-start hook: set up yet? a newer version out?
+tools/update.py                        the update look and install (check / status / apply); tests in tools/tests/
 tools/voz-engine/, tools/bin/          the offline transcription engine (Apple silicon)
 tools/release/sign_release.sh          maintainer: rebuild, sign and notarize every prebuilt macOS program
 tools/vlm-describe/                    the on-device vision model for private footage (Apple silicon)
@@ -35,6 +37,7 @@ SKILL.md, `${CLAUDE_SKILL_DIR}` is the skill's folder and the repo root is
 |---|---|
 | `setup` | First-run onboarding: checks tools, asks where things live, writes settings. Re-runnable. |
 | `customize` | Remembers preferences and changes skills to fit the user ("from now on…", "change how X works"). |
+| `update-toolkit` | Shows what a newer version of the toolkit brings and installs it, keeping the user's own changes; the daily look itself is `tools/update.py check`, run by the session-start hook. |
 | `editing-coach` | Teaches editing: talking heads, pacing, b-roll, audio, color, stop motion, Resolve basics, shortcuts. |
 | `new-project` | Creates a project folder from the user's layout. |
 | `aroll-draft` | Raw talking-head take -> first-cut edit (cut list, Resolve/XML/EDL exports, preview). The flagship. |

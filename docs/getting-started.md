@@ -51,6 +51,12 @@ Put it anywhere you like; it doesn't need to be next to your videos. Your own
 settings and preferences stay in its `user/` folder and are never uploaded
 or committed.
 
+The toolkit keeps improving. Once a day, when you start Claude in the folder, it
+looks whether a newer version is out (it asks GitHub for the latest version's id
+and sends nothing about you), and Claude tells you. Say "update the toolkit" to
+see what is new and install it; your settings, preferences and your own changes
+stay. "Stop checking for updates" switches the look off.
+
 ## 4. Open Claude in the folder
 
 ```sh

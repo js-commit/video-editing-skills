@@ -2,3 +2,6 @@
 apps/*/prebuilt/** -text -diff
 tools/bin/** -text -diff
 .claude/skills/voice-clear/scripts/bin/** -text -diff
+
+# Filled in with the commit id when GitHub packs a download (tools/update.py reads it); a git clone leaves it as it is.
+tools/version-stamp.txt export-subst

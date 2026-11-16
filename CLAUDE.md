@@ -13,6 +13,12 @@ anything else, greet them in one or two sentences and offer the `setup` skill
 (about ten minutes, every question skippable). If they would rather dive in,
 do what they asked: skills ask for any setting they need the first time.
 
+## Updates
+
+A session-start line saying UPDATE AVAILABLE means a newer version of this
+toolkit is out. Tell the user in one line when they first write and offer the
+`update-toolkit` skill. Never update without their yes.
+
 ## Every task
 
 - Read `user/preferences.md` (if it exists) before starting any editing task.

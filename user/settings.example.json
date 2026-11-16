@@ -58,6 +58,9 @@
   "archive": {
     "default_mode": "lean"
   },
+  "updates": {
+    "check": true
+  },
   "onboarding": {
     "completed_steps": [],
     "skipped_steps": [],

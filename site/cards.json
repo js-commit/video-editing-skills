@@ -35,6 +35,7 @@
     "archive-project": {"group": "tidy", "line": "Done with a video? Keeps what matters and frees up the space. Asks first.", "say": "archive this project"},
     "new-project": {"group": "tidy", "line": "Sets up a tidy folder for your next video.", "say": "start a new project"},
     "setup": {"group": "yours", "line": "A few skippable questions, so everything knows where your stuff lives.", "say": "set me up"},
+    "update-toolkit": {"group": "yours", "line": "Tells you when a newer version is out and installs it. Your settings and changes stay.", "say": "update the toolkit"},
     "customize": {"group": "yours", "line": "Say \"from now on...\" and it remembers. Or ask it to change how anything works.", "say": "from now on, keep my jokes"},
     "editing-coach": {"group": "yours", "line": "Learning to edit? Ask anything and get step-by-step answers and feedback.", "say": "what's a J-cut?"},
     "aroll-benchmark": {"group": "yours", "line": "For tinkerers: scores the automatic cut against your own edit.", "say": "score the auto cut against my edit", "needs": "dev"}

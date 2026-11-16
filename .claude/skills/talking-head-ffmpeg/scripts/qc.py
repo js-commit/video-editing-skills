@@ -30,9 +30,9 @@ import _common as C  # noqa: E402
 def count_frames(path):
     out = subprocess.run([C.ffprobe(), "-v", "error", "-count_packets", "-select_streams", "v:0", "-show_entries",
                           "stream=nb_read_packets", "-of", "csv=p=0", str(path)], capture_output=True, text=True)
-    try:
-        return int(out.stdout.strip().split(",")[0])
-    except ValueError:
+    try:    # a file with a timecode track answers twice ("8\n\n8"): the first number
+        return int(out.stdout.split()[0].split(",")[0])
+    except (ValueError, IndexError):
         return 0
 
 

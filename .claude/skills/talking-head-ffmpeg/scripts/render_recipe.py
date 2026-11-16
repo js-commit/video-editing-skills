@@ -14,7 +14,8 @@ Picture: recipe.flatten() cuts the record clock into pieces (a-roll between bric
 brick, split again at overlay edges). Each piece is its own segment in <work>/segments/, named by a hash of (source,
 size, mtime, in, frames, filter, encoder): a notes round that moves three bricks re-encodes only those pieces and their
 neighbours, and the final join is a stream copy. Per segment: setpts, fps, tpad (a segment is never short), then the
-fit (contain / cover with a zoom focus / blur), limited-range bt709, and a frame-count check.
+fit (contain / cover with a zoom focus / blur), limited-range bt709, and a frame-count check. Each piece is cut with a seek
+half a frame before its first source frame (seek()), so it starts on that frame whatever the file's time base.
 
 Overlays: frame-sized RGBA PNGs (held for the slot, alpha fade in/out) or animated clips with alpha (.mov ProRes 4444
 or .webm VP9, played frame for frame, fade 0) composited over whatever plays.
@@ -33,11 +34,13 @@ import argparse
 import functools
 import hashlib
 import json
+import math
 import os
 import re
 import subprocess
 import sys
 import time
+from fractions import Fraction
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -109,6 +112,31 @@ def retag(path):
     if s.get("color_space") == "bt709" and s.get("color_range") == "tv":
         return ""
     return ",setparams=range=tv:colorspace=bt709:color_primaries=bt709:color_trc=bt709"
+
+
+@functools.lru_cache(None)
+def picture_lead(path):
+    """Seconds from the container's start to its first video frame: 0 for most files, one frame for a clip whose sound
+    starts at zero and whose picture starts a frame later. ffmpeg's -ss counts from the container's start."""
+    j = json.loads(subprocess.run([C.ffprobe(), "-v", "error", "-select_streams", "v:0", "-show_entries",
+                                   "stream=start_time:format=start_time", "-of", "json", path],
+                                  capture_output=True, text=True).stdout or "{}")
+
+    def num(x):
+        return float(x) if x not in (None, "N/A") else 0.0
+    return num(((j.get("streams") or [{}])[0]).get("start_time")) - num((j.get("format") or {}).get("start_time"))
+
+
+def seek(path, in_s):
+    """(k, ss): the piece's first source frame (the first one at or after in_s; an in_s that sits on a frame to within
+    float error IS that frame) and the -ss that lands on it, half a frame before it. Seeking to in_s itself, printed
+    with a few decimals, is not safe: ffmpeg rounds a seek to the stream's time base and keeps the first frame at or
+    after that tick, so a seek that rounds UP past the frame by more than half a tick (21 microseconds on a 1/24000
+    camera file) drops it and starts on the next one. The picture then runs one frame behind the sound, which is cut
+    sample-exact."""
+    fn, d = R.probe(path)[1], picture_lead(path)
+    k = max(math.ceil((in_s - d) * fn - 1e-3), 0)
+    return k, max(d + float((Fraction(k) - Fraction(1, 2)) / fn), 0.0)
 
 
 @functools.lru_cache(None)
@@ -273,15 +301,16 @@ def main():
         else:
             vf_args = ["-vf", vf + closing]
         st = os.stat(p["file"])
-        key = (f"{os.path.realpath(p['file'])}|{st.st_size}|{int(st.st_mtime)}|{p['in_s']:.4f}|{n}|"
+        ss = f"{seek(p['file'], p['in_s'])[1]:.6f}"
+        key = (f"{os.path.realpath(p['file'])}|{st.st_size}|{int(st.st_mtime)}|ss{ss}|{n}|"
                f"{' '.join(vf_args)}{ov_key}|{' '.join(enc)}")
         seg = seg_dir / (hashlib.sha1(key.encode()).hexdigest()[:16] + ".mp4")
         lst.append(seg)
         if seg.exists():
             continue
         tmp = seg.with_name(seg.stem + ".part.mp4")
-        cmd = [ffmpeg, "-v", "error", "-y", "-ss", f"{p['in_s']:.4f}", "-i", p["file"], *ov_in, "-an", *vf_args,
-               "-frames:v", str(n), *enc, str(tmp)]
+        cmd = [ffmpeg, "-v", "error", "-y", "-ss", ss, "-i", p["file"], *ov_in, "-an", *vf_args,
+               "-frames:v", str(n), *enc, "-write_tmcd", "0", str(tmp)]   # no timecode track: every segment the same streams
         res = C.media.run(cmd, capture_output=True, text=True)
         if res.returncode:
             sys.exit(f"piece {i} ({p['kind']}, {os.path.basename(p['file'])} @ {p['in_s']:.2f}): "

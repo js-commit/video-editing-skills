@@ -265,13 +265,20 @@ def resolve_window_id():
 import CoreGraphics
 if let wins = CGWindowListCopyWindowInfo([.optionAll], kCGNullWindowID)
         as? [[String: Any]] {
-    var best = (id: -1, area: 0)
+    // Resolve keeps an untitled, off-screen window bigger than its main one
+    // (captures as blank white), so rank on-screen, then titled, then area.
+    var best = (id: -1, rank: -1, area: 0)
     for w in wins {
         let owner = w["kCGWindowOwnerName"] as? String ?? ""
         guard owner.contains("Resolve") else { continue }
         let b = w["kCGWindowBounds"] as? [String: Any] ?? [:]
         let area = (b["Width"] as? Int ?? 0) * (b["Height"] as? Int ?? 0)
-        if area > best.area { best = (w["kCGWindowNumber"] as? Int ?? -1, area) }
+        guard area >= 400_000 else { continue }   // toolbars, tooltips
+        let rank = ((w["kCGWindowIsOnscreen"] as? Bool ?? false) ? 2 : 0)
+            + ((w["kCGWindowName"] as? String ?? "").isEmpty ? 0 : 1)
+        if rank > best.rank || (rank == best.rank && area > best.area) {
+            best = (w["kCGWindowNumber"] as? Int ?? -1, rank, area)
+        }
     }
     if best.id > 0 { print(best.id) }
 }

@@ -80,7 +80,9 @@ def geometry(p, W, H):
         return (f"scale={zw}:{zh}:force_original_aspect_ratio=increase:{sc},"
                 f"crop={W}:{H}:'min(max(iw*{cx:.4f}-{W / 2},0),iw-{W})':'min(max(ih*{cy:.4f}-{H / 2},0),ih-{H})'")
     if fit == "blur":
-        return (f"split[bg][fg];[bg]scale={W // 4}:{H // 4}:force_original_aspect_ratio=increase,crop={W // 4}:{H // 4},"
+        # format=yuv420p first: an HEVC source decoded on VideoToolbox arrives as nv12, and boxblur on it turned the right
+        # half of the backdrop solid green beside the clip.
+        return (f"format=yuv420p,split[bg][fg];[bg]scale={W // 4}:{H // 4}:force_original_aspect_ratio=increase,crop={W // 4}:{H // 4},"
                 f"boxblur=12:2,scale={W}:{H}:{sc},eq=brightness=-0.08[bgb];"
                 f"[fg]scale={W}:{H}:force_original_aspect_ratio=decrease:{sc}[fgs];[bgb][fgs]overlay=(W-w)/2:(H-h)/2")
     return f"scale={W}:{H}:force_original_aspect_ratio=decrease:{sc},pad={W}:{H}:(ow-iw)/2:(oh-ih)/2"

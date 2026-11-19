@@ -61,9 +61,14 @@ def labels_work():
     return r.returncode == 0
 
 
-def sheet(items, out, width, cols):
-    """items: [(file, source_s, label)] - one tile each, in order."""
+def sheet(items, out, width, cols, box=False):
+    """items: [(file, source_s, label)] - one tile each, in order.
+    box: fit every tile into one 16:9 box, for a sheet that mixes shapes (concat refuses tiles of different sizes: a
+    tall phone clip beside 4K bricks failed with 'Invalid argument')."""
     rows = -(-len(items) // cols)
+    bh = round(width * 9 / 16 / 2) * 2
+    fit = (f"scale={width}:{bh}:force_original_aspect_ratio=decrease,pad={width}:{bh}:(ow-iw)/2:(oh-ih)/2" if box
+           else f"scale={width}:-2")
     cmd = [C.ffmpeg(), "-v", "error", "-y"]
     for path, t, _ in items:
         cmd += ["-ss", f"{t:.3f}", "-i", path]
@@ -72,7 +77,7 @@ def sheet(items, out, width, cols):
     for i, (_, _, lab) in enumerate(items):
         dt = (f",drawtext=text='{lab}':fontsize=24:fontcolor=yellow:box=1:boxcolor=black@0.7:boxborderw=5:x=8:y=8"
               if text else "")
-        parts.append(f"[{i}:v]trim=end_frame=1,setpts=PTS-STARTPTS,scale={width}:-2,setsar=1,format=yuv420p{dt}[t{i}]")
+        parts.append(f"[{i}:v]trim=end_frame=1,setpts=PTS-STARTPTS,{fit},setsar=1,format=yuv420p{dt}[t{i}]")
     fc = ";".join(parts) + ";" + "".join(f"[t{i}]" for i in range(len(items))) + \
         f"concat=n={len(items)}:v=1:a=0,tile={cols}x{rows}[s]"
     r = C.media.run(cmd + ["-filter_complex", fc, "-map", "[s]", "-frames:v", "1", "-q:v", "4", out],
@@ -179,7 +184,7 @@ def cmd_bricks(a, r, work):
     per, made = 30, []
     for s in range(0, len(tiles), per):
         out = outdir / f"{stem}_{s // per + 1:02d}.jpg"
-        sheet(tiles[s:s + per], str(out), a.width, 6)
+        sheet(tiles[s:s + per], str(out), a.width, 6, box=True)
         made.append(str(out))
         print(f"{out}: bricks {s // 2 + 1}-{min(len(tiles), s + per) // 2}", file=sys.stderr)
     print(json.dumps({"bricks": len(tiles) // 2, "sheets": made}))
